@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <deque>
 
 namespace Network {
 
@@ -21,10 +22,13 @@ public:
     void start() override;
     void stop() override;
     bool isRunning() const override { return running; }
+    void send(const std::string& data) override;
 
 private:
     void startReceive();
     void handleReceive(const std::error_code& error, std::size_t bytes_transferred);
+    void doWrite(const std::string& data);
+    void checkWriteQueue();
 
     std::string portName;
     unsigned int baudRate;
@@ -34,6 +38,9 @@ private:
     std::unique_ptr<asio::serial_port> serialPort;
     std::vector<char> recvBuffer;
     
+    std::deque<std::string> writeQueue;
+    bool isWriting = false;
+
     std::thread serviceThread;
     std::atomic<bool> running{false};
 };

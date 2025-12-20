@@ -27,9 +27,15 @@ void DashboardWindow::updateData(const Core::NavData& update) {
 
 void DashboardWindow::render(Core::ThreadPool& threadPool, const App::ServiceManager& serviceManager) {
     ImGui::Begin("Navigation Dashboard");
+    auto lock = serviceManager.getLock();
     
+    size_t poolThreads = threadPool.getBusyCount();
+    size_t serviceThreads = serviceManager.getActiveServices().size();
+    size_t outputThreads = serviceManager.getActiveOutputs().size();
+    size_t totalThreads = poolThreads + serviceThreads + outputThreads;
+
     ImGui::Text("System Status: Running");
-    ImGui::Text("Active Threads: %zu", threadPool.getBusyCount());
+    ImGui::Text("Active Threads: %zu (Pool: %zu, IO: %zu)", totalThreads, poolThreads, serviceThreads + outputThreads);
     ImGui::Separator();
 
     {

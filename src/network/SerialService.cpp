@@ -56,6 +56,8 @@ void SerialService::stop() {
     
     // Reset ioContext for potential restart
     ioContext.restart();
+    writeQueue.clear();
+    isWriting = false;
 }
 
 void SerialService::startReceive() {
@@ -83,6 +85,42 @@ void SerialService::handleReceive(const std::error_code& error, std::size_t byte
             running = false; 
         }
     }
+}
+
+void SerialService::send(const std::string& data) {
+    if (!running) return;
+    asio::post(ioContext, [this, data]() {
+        doWrite(data);
+    });
+}
+
+void SerialService::doWrite(const std::string& data) {
+    writeQueue.push_back(data);
+    if (!isWriting) {
+        checkWriteQueue();
+    }
+}
+
+void SerialService::checkWriteQueue() {
+    if (writeQueue.empty()) {
+        isWriting = false;
+        return;
+    }
+
+    isWriting = true;
+    const std::string& msg = writeQueue.front();
+
+    asio::async_write(*serialPort, asio::buffer(msg),
+        [this](const std::error_code& error, std::size_t /*bytes_transferred*/) {
+            if (!running) return;
+            
+            if (error) {
+                std::cerr << "Serial Write Error: " << error.message() << std::endl;
+            }
+
+            writeQueue.pop_front();
+            checkWriteQueue();
+        });
 }
 
 } // namespace Network

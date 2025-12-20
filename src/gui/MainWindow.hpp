@@ -12,7 +12,7 @@ public:
     MainWindow(int width, int height, const std::string& title);
     ~MainWindow();
 
-    bool init();
+    virtual bool init();
     void run();
     
     // Method to be called every frame to render custom UI

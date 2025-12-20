@@ -67,5 +67,45 @@ cmake --build .
 - Implémenter le décodage de nouvelles phrases NMEA (MWV, RMC, etc.).
 - Ajouter un système de log sur fichier (en plus de l'écran).
 
+## Session: 20 Décembre 2025 (Suite)
+
+### Objectifs
+- Implémenter la rediffusion (multiplexage) des données reçues vers des sorties (Série/UDP).
+- Permettre le filtrage des sources pour chaque sortie.
+- Ajouter une configuration de l'apparence (Thème, Taille de police).
+
+### Réalisations Techniques
+
+#### 1. Multiplexage et Sorties
+- **Architecture Output** : Extension de `ServiceManager` pour gérer des `DataOutputConfig` en plus des sources.
+- **Bidirectionnel** : Mise à jour de `SerialService` pour supporter l'écriture (`send()`).
+- **UdpSender** : Création d'une classe dédiée à l'envoi de paquets UDP.
+- **Routage** : Implémentation de la logique de diffusion dans `ServiceManager::broadcast`.
+  - Support du mode "Tout envoyer" (`multiplexAll`).
+  - Support du filtrage par ID de source (`sourceIds`).
+
+#### 2. Interface Graphique
+- **CommunicationSettingsWindow** :
+  - Ajout d'onglets "Inputs" et "Outputs".
+  - Interface de sélection des sources à multiplexer (Checkboxes dynamiques).
+- **DisplaySettingsWindow** :
+  - Nouvelle fenêtre pour configurer le thème (Dark/Light/Classic) et l'échelle de la police.
+  - Intégration dans le menu principal.
+
+#### 3. Configuration et Persistance
+- Mise à jour de `DataSourceConfig.hpp` pour inclure les structures `DataOutputConfig` et `DisplayConfig`.
+- Mise à jour de `ConfigManager` pour sauvegarder/charger :
+  - Les sorties et leurs règles de multiplexage.
+  - Les préférences d'affichage.
+
+#### 4. Corrections
+- **Linker Error** : Implémentation manquante des méthodes d'écriture dans `SerialService.cpp`.
+- **Crash au démarrage** : Déplacement de l'initialisation de la configuration d'affichage (`applyConfig`) après la création du contexte ImGui.
+
+### État Actuel
+- L'application peut agir comme un multiplexeur NMEA (N entrées -> M sorties).
+- L'utilisateur peut personnaliser l'apparence.
+- La configuration est entièrement persistante.
+
 ---
 *Pour reprendre le développement, demandez à l'IA de "Lire le fichier docs/HISTORY.md pour récupérer le contexte".*

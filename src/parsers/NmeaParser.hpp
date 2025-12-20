@@ -18,6 +18,7 @@ private:
     
     // Parsers for specific sentences
     static void parseRMC(const std::vector<std::string>& tokens, Core::NavData& data);
+    static void parseGGA(const std::vector<std::string>& tokens, Core::NavData& data);
     static void parseMWV(const std::vector<std::string>& tokens, Core::NavData& data);
 };
 

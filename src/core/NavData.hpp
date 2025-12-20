@@ -17,6 +17,7 @@ struct NavData {
     // Position
     double latitude = 0.0;
     double longitude = 0.0;
+    double altitude = 0.0; // Meters
     
     // Depth
     double depth = 0.0; // Meters
@@ -27,6 +28,9 @@ struct NavData {
     
     // Source ID (e.g., "NMEA_UDP_1", "SIMULATOR")
     std::string sourceId;
+
+    // Status
+    bool isGpsValid = false;
 };
 
 } // namespace Core

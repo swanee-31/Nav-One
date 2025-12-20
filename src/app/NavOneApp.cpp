@@ -10,7 +10,8 @@ namespace App {
 NavOneApp::NavOneApp(Core::ThreadPool& pool) 
     : Gui::MainWindow(1280, 720, "NavOne - Navigation Hub"), 
       threadPool(pool),
-      configWindow(serviceManager) {
+      configWindow(serviceManager),
+      simulatorWindow(simulator) {
     
     // Setup Service Manager Logging
     serviceManager.setLogCallback([this](const std::string& source, const std::string& frame) {
@@ -19,9 +20,13 @@ NavOneApp::NavOneApp(Core::ThreadPool& pool)
 
     // Load Config
     serviceManager.loadConfig();
-
+    
     // Subscribe to MessageBus
     busListenerId = Core::MessageBus::instance().subscribe([this](const Core::NavData& update) {
+        {
+            std::lock_guard<std::mutex> lock(dataMutex);
+            currentData = update;
+        }
         dashboardWindow.updateData(update);
     });
 
@@ -29,22 +34,24 @@ NavOneApp::NavOneApp(Core::ThreadPool& pool)
     threadPool.enqueue([this] {
         while(running) {
             if (isSimulatorActive) {
-                Core::NavData simData;
-                simData.sourceId = "SIMULATOR";
-                simData.timestamp = std::chrono::system_clock::now();
+                // Update Simulator Physics (100ms step)
+                simulator.update(0.1);
                 
-                // Simulate some movement
-                static double heading = 0.0;
-                heading = fmod(heading + 1.0, 360.0);
-                simData.heading = heading;
-                simData.speedOverGround = 5.0 + (rand() % 100) / 10.0;
+                // Only publish if Simulator is enabled as a Source in ServiceManager
+                if (serviceManager.isSourceEnabled("SIMULATOR")) {
+                    // Get Data
+                    Core::NavData simData = simulator.getCurrentData();
+                    
+                    // Log simulated frames
+                    auto sentences = simulator.getNmeaSentences();
+                    for (const auto& sentence : sentences) {
+                        monitorWindow.addLog("SIMULATOR", sentence);
+                        // Broadcast to outputs
+                        serviceManager.broadcast(sentence + "\r\n", "SIMULATOR");
+                    }
 
-                // Log simulated frame (fake NMEA)
-                std::stringstream ss;
-                ss << "$GPHDT," << std::fixed << std::setprecision(1) << heading << ",T";
-                monitorWindow.addLog("SIMULATOR", ss.str());
-
-                Core::MessageBus::instance().publish(simData);
+                    Core::MessageBus::instance().publish(simData);
+                }
             }
             
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -58,6 +65,15 @@ NavOneApp::~NavOneApp() {
     serviceManager.stopAll();
 }
 
+bool NavOneApp::init() {
+    if (!Gui::MainWindow::init()) return false;
+    
+    // Apply Display Settings after ImGui context is created
+    displaySettingsWindow.applyConfig();
+    
+    return true;
+}
+
 void NavOneApp::render() {
     // Menu Bar
     if (ImGui::BeginMainMenuBar()) {
@@ -65,9 +81,35 @@ void NavOneApp::render() {
             if (ImGui::MenuItem("Communication")) {
                 configWindow.show();
             }
+            if (ImGui::MenuItem("Display")) {
+                displaySettingsWindow.show();
+            }
             if (ImGui::MenuItem("NMEA Monitor", nullptr, monitorWindow.isVisible())) {
                 monitorWindow.toggle();
             }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Plugins")) {
+            if (ImGui::MenuItem("Load GPS Plugin")) {
+                // In a real app, we would scan the directory. 
+                // Here we hardcode the path relative to the executable for the demo.
+                // CMake puts it in src/plugins/
+                pluginManager.loadPlugin("GpsPlugin.dll");
+            }
+            if (ImGui::MenuItem("Load GPS Big Plugin")) {
+                pluginManager.loadPlugin("GpsBigPlugin.dll");
+            }
+            
+            ImGui::Separator();
+            
+            auto& plugins = pluginManager.getPlugins();
+            for (auto& plugin : plugins) {
+                if (ImGui::MenuItem(plugin.instance->getName(), nullptr, plugin.active)) {
+                    plugin.active = !plugin.active;
+                }
+            }
+            
             ImGui::EndMenu();
         }
 
@@ -76,16 +118,26 @@ void NavOneApp::render() {
             if (ImGui::MenuItem(active ? "Stop Simulator" : "Start Simulator")) {
                 isSimulatorActive = !active;
             }
+            if (ImGui::MenuItem("Configure Simulator")) {
+                simulatorWindow.show();
+            }
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
     }
-
+    
     // Render Windows
     configWindow.render();
+    displaySettingsWindow.render();
+    simulatorWindow.render();
     monitorWindow.render();
     dashboardWindow.render(threadPool, serviceManager);
     
+    // Render Plugins
+    {
+        std::lock_guard<std::mutex> lock(dataMutex);
+        pluginManager.renderPlugins(currentData);
+    }
 }
 
 } // namespace App

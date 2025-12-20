@@ -23,7 +23,9 @@ public:
 private:
     bool visible = false;
     bool autoScroll = true;
+    bool paused = false;
     std::deque<std::string> logs;
+    std::string textBuffer; // For InputTextMultiline
     const size_t MAX_LOGS = 100;
     std::mutex logMutex;
 };
