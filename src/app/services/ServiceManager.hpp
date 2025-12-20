@@ -31,7 +31,10 @@ public:
 
     // Thread-safe accessors for GUI
     std::vector<DataSourceConfig>& getSources() { return sources; }
+    const std::vector<DataSourceConfig>& getSources() const { return sources; }
+    
     std::vector<DataOutputConfig>& getOutputs() { return outputs; }
+    const std::vector<DataOutputConfig>& getOutputs() const { return outputs; }
     
     // Locking helper for GUI
     std::unique_lock<std::recursive_mutex> getLock() const { return std::unique_lock<std::recursive_mutex>(mutex); }

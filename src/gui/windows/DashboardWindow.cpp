@@ -79,18 +79,25 @@ void DashboardWindow::render(Core::ThreadPool& threadPool, const App::ServiceMan
                 ImGui::TextUnformatted(source.name.c_str());
 
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextUnformatted(source.type == App::SourceType::Serial ? "Serial" : "UDP");
+                const char* typeStr = "Unknown";
+                if (source.type == App::SourceType::Serial) typeStr = "Serial";
+                else if (source.type == App::SourceType::Udp) typeStr = "UDP";
+                else if (source.type == App::SourceType::Simulator) typeStr = "Sim";
+                ImGui::TextUnformatted(typeStr);
 
                 ImGui::TableSetColumnIndex(2);
                 if (!source.enabled) {
                     ImGui::TextDisabled("Disabled");
                 } else {
                     auto it = activeServices.find(source.id);
-                    bool isRunning = (it != activeServices.end() && it->second && it->second->isRunning());
-                    if (isRunning) {
-                        ImGui::TextColored(ImVec4(0, 1, 0, 1), "Running");
+                    if (it == activeServices.end()) {
+                        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Not Found");
+                    } else if (!it->second) {
+                        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Null Ptr");
+                    } else if (!it->second->isRunning()) {
+                        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Stopped");
                     } else {
-                        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Error");
+                        ImGui::TextColored(ImVec4(0, 1, 0, 1), "Running");
                     }
                 }
             }

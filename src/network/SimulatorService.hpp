@@ -15,7 +15,7 @@ public:
     void send(const std::string& data) override {} // Simulator doesn't accept input this way
 
 private:
-    bool running = false;
+    bool running = true; // Default to true to avoid race condition at startup
 };
 
 } // namespace Network
