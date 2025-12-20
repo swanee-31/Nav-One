@@ -1,0 +1,42 @@
+# Build directories
+build/
+out/
+bin/
+obj/
+
+# Visual Studio / MSBuild
+.vs/
+Debug/
+Release/
+x64/
+x86/
+*.user
+*.suo
+*.opensdf
+*.sdf
+*.cache
+*.pdb
+*.ilk
+*.aps
+
+# VS Code
+.vscode/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+*.cmake
+
+# Executables and Libraries
+*.exe
+*.dll
+*.lib
+*.a
+*.so
+*.dylib
+
+# OS specific
+.DS_Store
+Thumbs.db
