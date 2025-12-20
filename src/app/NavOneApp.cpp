@@ -100,6 +100,9 @@ void NavOneApp::render() {
             if (ImGui::MenuItem("Load GPS Big Plugin")) {
                 pluginManager.loadPlugin("GpsBigPlugin.dll");
             }
+            if (ImGui::MenuItem("Load Wind Plugin")) {
+                pluginManager.loadPlugin("WindPlugin.dll");
+            }
             
             ImGui::Separator();
             

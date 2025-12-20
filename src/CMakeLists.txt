@@ -75,6 +75,20 @@ target_sources(GpsBigPlugin PRIVATE
     ${imgui_SOURCE_DIR}/imgui_demo.cpp
 )
 
+# Wind Plugin
+add_library(WindPlugin SHARED plugins/wind/WindPlugin.cpp)
+target_include_directories(WindPlugin PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}
+)
+target_sources(WindPlugin PRIVATE
+    ${imgui_SOURCE_DIR}/imgui.cpp
+    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+    ${imgui_SOURCE_DIR}/imgui_demo.cpp
+)
+
 # Ensure output directory is the same as executable so it can find it easily
 # set_target_properties(GpsPlugin PROPERTIES 
 #     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/src/plugins
