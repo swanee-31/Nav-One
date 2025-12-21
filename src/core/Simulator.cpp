@@ -163,11 +163,15 @@ NavData Simulator::getCurrentData() const {
         data.courseOverGround = currentCog;
         data.heading = currentCog; // Assume heading = COG for sim
         data.isGpsValid = true;
+        data.hasPosition = true;
+        data.hasSpeed = true;
+        data.hasHeading = true;
     }
     
     if (config.enableWind) {
         data.windSpeed = windSpeed;
         data.windAngle = windAngle;
+        data.hasWind = true;
     }
     
     return data;

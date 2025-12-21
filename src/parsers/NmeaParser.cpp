@@ -107,6 +107,8 @@ void NmeaParser::parseRMC(const std::vector<std::string>& tokens, Core::NavData&
     // if (tokens[2] == "A") {
     {
         data.isGpsValid = (tokens[2] == "A");
+        data.hasPosition = true;
+        data.hasSpeed = true;
 
         // Position
         if (!tokens[3].empty() && !tokens[4].empty()) {
@@ -174,6 +176,7 @@ void NmeaParser::parseGGA(const std::vector<std::string>& tokens, Core::NavData&
     } catch (...) {
         data.isGpsValid = false;
     }
+    data.hasPosition = true;
 
     // Position
     if (!tokens[2].empty() && !tokens[3].empty()) {
@@ -204,6 +207,7 @@ void NmeaParser::parseMWV(const std::vector<std::string>& tokens, Core::NavData&
     if (tokens[5] == "A") {
         if (!tokens[1].empty()) data.windAngle = std::stod(tokens[1]);
         if (!tokens[3].empty()) data.windSpeed = std::stod(tokens[3]);
+        data.hasWind = true;
     }
 }
 

@@ -30,7 +30,14 @@ struct NavData {
     std::string sourceId;
 
     // Status
-    bool isGpsValid = false;
+    bool isGpsValid = false; // GPS Fix is valid
+    
+    // Data Availability Flags
+    bool hasPosition = false; // Lat/Lon/Alt
+    bool hasSpeed = false;    // SOG/COG
+    bool hasWind = false;
+    bool hasDepth = false;
+    bool hasHeading = false;
 };
 
 } // namespace Core

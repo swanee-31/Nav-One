@@ -25,7 +25,39 @@ NavOneApp::NavOneApp(Core::ThreadPool& pool)
     busListenerId = Core::MessageBus::instance().subscribe([this](const Core::NavData& update) {
         {
             std::lock_guard<std::mutex> lock(dataMutex);
-            currentData = update;
+            // Merge logic to persist data across partial updates
+            currentData.timestamp = update.timestamp;
+            currentData.sourceId = update.sourceId;
+
+            if (update.hasPosition) {
+                currentData.latitude = update.latitude;
+                currentData.longitude = update.longitude;
+                currentData.altitude = update.altitude;
+                currentData.isGpsValid = update.isGpsValid;
+                currentData.hasPosition = true;
+            }
+            
+            if (update.hasSpeed) {
+                currentData.speedOverGround = update.speedOverGround;
+                currentData.courseOverGround = update.courseOverGround;
+                currentData.hasSpeed = true;
+            }
+            
+            if (update.hasHeading) {
+                currentData.heading = update.heading;
+                currentData.hasHeading = true;
+            }
+            
+            if (update.hasWind) {
+                currentData.windSpeed = update.windSpeed;
+                currentData.windAngle = update.windAngle;
+                currentData.hasWind = true;
+            }
+            
+            if (update.hasDepth) {
+                currentData.depth = update.depth;
+                currentData.hasDepth = true;
+            }
         }
         dashboardWindow.updateData(update);
     });
