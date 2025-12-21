@@ -9,8 +9,9 @@
 #include "gui/windows/CommunicationSettingsWindow.hpp"
 #include "gui/windows/DisplaySettingsWindow.hpp"
 #include "gui/windows/SimulatorWindow.hpp"
+#include "gui/windows/AboutWindow.hpp"
 #include "app/PluginManager.hpp"
-#include "core/Simulator.hpp"
+#include "simulator/ISimulator.hpp"
 #include <atomic>
 #include <memory>
 
@@ -33,16 +34,17 @@ private:
     ServiceManager serviceManager;
     PluginManager pluginManager;
 
+    // Simulator (Must be declared before SimulatorWindow)
+    std::unique_ptr<Simulator::ISimulator> simulator;
+    std::atomic<bool> isSimulatorActive{false};
+
     // Windows
     Gui::NmeaMonitorWindow monitorWindow;
     Gui::DashboardWindow dashboardWindow;
     Gui::CommunicationSettingsWindow configWindow;
     Gui::DisplaySettingsWindow displaySettingsWindow;
     Gui::SimulatorWindow simulatorWindow;
-    
-    // Simulator
-    Core::Simulator simulator;
-    std::atomic<bool> isSimulatorActive{false};
+    Gui::AboutWindow aboutWindow;
     
     // Data
     std::mutex dataMutex;

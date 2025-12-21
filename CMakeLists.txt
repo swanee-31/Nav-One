@@ -5,6 +5,24 @@ project(NavOne VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Get Git Version
+find_package(Git)
+if(GIT_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+endif()
+
+if(NOT GIT_VERSION)
+    set(GIT_VERSION "unknown")
+endif()
+
+add_compile_definitions(NAVONE_GIT_VERSION="${GIT_VERSION}")
+
 # --- Dependencies ---
 include(FetchContent)
 

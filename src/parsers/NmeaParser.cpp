@@ -37,6 +37,18 @@ bool NmeaParser::parse(const std::string& sentence, Core::NavData& data) {
         } else if (type == "MWV") {
             parseMWV(tokens, data);
             return true;
+        } else if (type == "DPT") {
+            parseDPT(tokens, data);
+            return true;
+        } else if (type == "MTW") {
+            parseMTW(tokens, data);
+            return true;
+        } else if (type == "VHW") {
+            parseVHW(tokens, data);
+            return true;
+        } else if (type == "HDT") {
+            parseHDT(tokens, data);
+            return true;
         }
     } catch (const std::exception& e) {
         std::cerr << "Parse Error: " << e.what() << std::endl;
@@ -208,6 +220,70 @@ void NmeaParser::parseMWV(const std::vector<std::string>& tokens, Core::NavData&
         if (!tokens[1].empty()) data.windAngle = std::stod(tokens[1]);
         if (!tokens[3].empty()) data.windSpeed = std::stod(tokens[3]);
         data.hasWind = true;
+    }
+}
+
+void NmeaParser::parseDPT(const std::vector<std::string>& tokens, Core::NavData& data) {
+    // $IIDPT,depth,offset*cs
+    // 1: Depth relative to transducer
+    // 2: Offset from transducer
+    
+    if (tokens.size() < 2) return;
+    
+    if (!tokens[1].empty()) {
+        data.depth = std::stod(tokens[1]);
+        
+        // Apply offset if present
+        if (tokens.size() > 2 && !tokens[2].empty()) {
+            data.depth += std::stod(tokens[2]);
+        }
+        
+        data.hasDepth = true;
+    }
+}
+
+void NmeaParser::parseMTW(const std::vector<std::string>& tokens, Core::NavData& data) {
+    // $IIMTW,11.0,C*cs
+    // 1: Temperature
+    // 2: Unit (C)
+    
+    if (tokens.size() < 2) return;
+    
+    if (!tokens[1].empty()) {
+        data.waterTemperature = std::stod(tokens[1]);
+        data.hasWaterTemperature = true;
+    }
+}
+
+void NmeaParser::parseVHW(const std::vector<std::string>& tokens, Core::NavData& data) {
+    // $IIVHW,degT,T,degM,M,knots,N,kmh,K*cs
+    // 1: Heading True
+    // 3: Heading Magnetic
+    // 5: Speed Knots
+    // 7: Speed Kmh
+    
+    if (tokens.size() < 6) return;
+    
+    if (!tokens[1].empty()) {
+        data.heading = std::stod(tokens[1]);
+        data.hasHeading = true;
+    }
+    
+    if (!tokens[5].empty()) {
+        data.speedThroughWater = std::stod(tokens[5]);
+        data.hasWaterSpeed = true;
+    }
+}
+
+void NmeaParser::parseHDT(const std::vector<std::string>& tokens, Core::NavData& data) {
+    // $IIHDT,heading,T*cs
+    // 1: Heading
+    
+    if (tokens.size() < 2) return;
+    
+    if (!tokens[1].empty()) {
+        data.heading = std::stod(tokens[1]);
+        data.hasHeading = true;
     }
 }
 

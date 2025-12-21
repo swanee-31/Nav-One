@@ -109,3 +109,29 @@ cmake --build .
 
 ---
 *Pour reprendre le dÃ©veloppement, demandez Ã  l'IA de "Lire le fichier docs/HISTORY.md pour rÃ©cupÃ©rer le contexte".*
+
+## Session: 21 Décembre 2025
+
+### Objectifs
+- Refactoring du module Simulator pour le rendre modulaire et extensible.
+- Utilisation du pattern Decorator pour séparer les logiques de simulation (GPS, Vent).
+- Déplacement des sources du simulateur dans un dossier dédié src/simulator/.
+
+### Réalisations Techniques
+
+#### 1. Refactoring du Simulateur (Pattern Decorator)
+- Interface ISimulator : Définit le contrat pour tous les composants de simulation.
+- BaseSimulator : Gère la physique de base (position, vitesse, cap) et la variation aléatoire.
+- SimulatorDecorator : Classe de base pour les décorateurs.
+- GpsSimulator : Décorateur ajoutant la génération de trames NMEA GPS (GPRMC).
+- WindSimulator : Décorateur ajoutant la simulation du vent (IIMWV).
+
+#### 2. Réorganisation des Fichiers
+- Création du dossier src/simulator/.
+- Suppression de src/core/Simulator.hpp et src/core/Simulator.cpp.
+- Mise à jour de CMakeLists.txt.
+
+#### 3. Intégration
+- NavOneApp : Initialise désormais une chaîne de décorateurs : WindSimulator(GpsSimulator(BaseSimulator)).
+- SimulatorWindow : Adaptée pour utiliser l'interface ISimulator.
+

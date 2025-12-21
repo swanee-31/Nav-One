@@ -20,6 +20,10 @@ private:
     static void parseRMC(const std::vector<std::string>& tokens, Core::NavData& data);
     static void parseGGA(const std::vector<std::string>& tokens, Core::NavData& data);
     static void parseMWV(const std::vector<std::string>& tokens, Core::NavData& data);
+    static void parseDPT(const std::vector<std::string>& tokens, Core::NavData& data);
+    static void parseMTW(const std::vector<std::string>& tokens, Core::NavData& data);
+    static void parseVHW(const std::vector<std::string>& tokens, Core::NavData& data);
+    static void parseHDT(const std::vector<std::string>& tokens, Core::NavData& data);
 };
 
 } // namespace Parsers

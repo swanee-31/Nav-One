@@ -22,6 +22,10 @@ struct NavData {
     // Depth
     double depth = 0.0; // Meters
     
+    // Water Environment
+    double waterTemperature = 0.0; // Celsius
+    double speedThroughWater = 0.0; // Knots
+
     // Wind
     double windSpeed = 0.0; // Knots
     double windAngle = 0.0; // Degrees relative to bow
@@ -38,6 +42,8 @@ struct NavData {
     bool hasWind = false;
     bool hasDepth = false;
     bool hasHeading = false;
+    bool hasWaterTemperature = false;
+    bool hasWaterSpeed = false;
 };
 
 } // namespace Core

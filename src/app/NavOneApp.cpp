@@ -1,5 +1,10 @@
 #include "NavOneApp.hpp"
 #include "imgui.h"
+#include "simulator/BaseSimulator.hpp"
+#include "simulator/GpsSimulator.hpp"
+#include "simulator/WindSimulator.hpp"
+#include "simulator/WaterSimulator.hpp"
+#include "simulator/AisSimulator.hpp"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -10,8 +15,17 @@ namespace App {
 NavOneApp::NavOneApp(Core::ThreadPool& pool) 
     : Gui::MainWindow(1280, 720, "NavOne - Navigation Hub"), 
       threadPool(pool),
+      simulator(std::make_unique<Simulator::AisSimulator>(
+          std::make_unique<Simulator::WaterSimulator>(
+              std::make_unique<Simulator::WindSimulator>(
+                  std::make_unique<Simulator::GpsSimulator>(
+                      std::make_unique<Simulator::BaseSimulator>()
+                  )
+              )
+          )
+      )),
       configWindow(serviceManager),
-      simulatorWindow(simulator) {
+      simulatorWindow(*simulator) {
     
     // Setup Service Manager Logging
     serviceManager.setLogCallback([this](const std::string& source, const std::string& frame) {
@@ -67,15 +81,15 @@ NavOneApp::NavOneApp(Core::ThreadPool& pool)
         while(running) {
             if (isSimulatorActive) {
                 // Update Simulator Physics (100ms step)
-                simulator.update(0.1);
+                simulator->update(0.1);
                 
                 // Only publish if Simulator is enabled as a Source in ServiceManager
                 if (serviceManager.isSourceEnabled("SIMULATOR")) {
                     // Get Data
-                    Core::NavData simData = simulator.getCurrentData();
+                    Core::NavData simData = simulator->getCurrentData();
                     
                     // Log simulated frames
-                    auto sentences = simulator.getNmeaSentences();
+                    auto sentences = simulator->getNmeaSentences();
                     for (const auto& sentence : sentences) {
                         monitorWindow.addLog("SIMULATOR", sentence);
                         // Broadcast to outputs
@@ -135,6 +149,9 @@ void NavOneApp::render() {
             if (ImGui::MenuItem("Load Wind Plugin")) {
                 pluginManager.loadPlugin("WindPlugin.dll");
             }
+            if (ImGui::MenuItem("Load Water Plugin")) {
+                pluginManager.loadPlugin("WaterPlugin.dll");
+            }
             
             ImGui::Separator();
             
@@ -158,6 +175,14 @@ void NavOneApp::render() {
             }
             ImGui::EndMenu();
         }
+
+        if (ImGui::BeginMenu("Help")) {
+            if (ImGui::MenuItem("About")) {
+                aboutWindow.show();
+            }
+            ImGui::EndMenu();
+        }
+
         ImGui::EndMainMenuBar();
     }
     
@@ -165,6 +190,7 @@ void NavOneApp::render() {
     configWindow.render();
     displaySettingsWindow.render();
     simulatorWindow.render();
+    aboutWindow.render();
     monitorWindow.render();
     dashboardWindow.render(threadPool, serviceManager);
     

@@ -4,7 +4,11 @@ set(SOURCES
     app/NavOneApp.cpp
     app/services/ServiceManager.cpp
     core/ThreadPool.cpp
-    core/Simulator.cpp
+    simulator/BaseSimulator.cpp
+    simulator/GpsSimulator.cpp
+    simulator/WindSimulator.cpp
+    simulator/WaterSimulator.cpp
+    simulator/AisSimulator.cpp
     parsers/NmeaParser.cpp
     utils/SerialPortUtils.cpp
     utils/ConfigManager.cpp
@@ -26,7 +30,14 @@ set(HEADERS
     core/ThreadPool.hpp
     core/NavData.hpp
     core/MessageBus.hpp
-    core/Simulator.hpp
+    simulator/ISimulator.hpp
+    simulator/BaseSimulator.hpp
+    simulator/SimulatorDecorator.hpp
+    simulator/GpsSimulator.hpp
+    simulator/WindSimulator.hpp
+    simulator/AisSimulator.hpp
+    simulator/WaterSimulator.hpp
+    simulator/SimulatorConfig.hpp
     parsers/NmeaParser.hpp
     utils/SerialPortUtils.hpp
     utils/ConfigManager.hpp
@@ -82,6 +93,20 @@ target_include_directories(WindPlugin PRIVATE
     ${imgui_SOURCE_DIR}
 )
 target_sources(WindPlugin PRIVATE
+    ${imgui_SOURCE_DIR}/imgui.cpp
+    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+    ${imgui_SOURCE_DIR}/imgui_demo.cpp
+)
+
+# Water Plugin
+add_library(WaterPlugin SHARED plugins/water/WaterPlugin.cpp)
+target_include_directories(WaterPlugin PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}
+)
+target_sources(WaterPlugin PRIVATE
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
     ${imgui_SOURCE_DIR}/imgui_tables.cpp
