@@ -1,20 +1,24 @@
 # NavOne
 
-NavOne est un concentrateur de données de navigation moderne et modulaire écrit en C++. Il est conçu pour agréger, traiter et visualiser les données NMEA 0183 provenant de multiples sources.
+NavOne est un concentrateur de données de navigation moderne et modulaire écrit en C++. 
+Il est conçu pour agréger, traiter et visualiser les données NMEA 0183 provenant de multiples sources.
+Ce logiciel est prévu pour être capable de tourner sur des architectures légères (type Raspberry Pi)
 
 ![NavOne Dashboard](docs/screenshot_placeholder.png)
 
 ## Fonctionnalités
 
 *   **Connectivité Multi-Sources** : Connexion simultanée à plusieurs sources de données via Ports Série (COM) ou flux réseau UDP.
-Utilisation du multi-threading (pool de threads) de 2 manières :
-- taches de fond comme le simulateur
-- chaque I/O (UDP ou série) utilise son propre thread 
+    Utilisation du multi-threading (pool de threads) de 2 manières :
+    - taches de fond comme le simulateur
+    - chaque I/O (UDP ou série) utilise son propre thread 
 *   **Dashboard Temps Réel** : Visualisation claire des données essentielles (Cap, Vitesse fond, Vitesse/Angle du vent).
 *   **Moniteur NMEA** : Inspection des trames brutes en temps réel avec fonctionnalités de pause et défilement automatique.
 *   **Mode Simulateur** : Générateur de données intégré pour le développement et les tests sans matériel.
+*   **Reroutage et multiplexage** : Possibilité de multiplexage des sources (UART, UDP, simulateur) et routage vers d'autres outputs
 *   **Architecture Modulaire** : Séparation stricte entre le Cœur logique, le Réseau et l'Interface Graphique.
 *   **Configuration Persistante** : Sauvegarde et chargement automatique de la configuration des sources (XML).
+*   **Système de plugins** : Intégration simple de nouveaux plugins (dll) 
 
 ## Technologies Utilisées
 
@@ -35,7 +39,7 @@ Utilisation du multi-threading (pool de threads) de 2 manières :
 
 1.  Cloner le dépôt :
     ```bash
-    git clone https://github.com/votre-utilisateur/nav-one.git
+    git clone https://github.com/swanee-31/nav-one.git
     cd nav-one
     ```
 
@@ -68,7 +72,9 @@ Le projet suit une architecture modulaire :
 - `src/network` : Gestion des communications (IO asynchrone).
 - `src/gui` : Interface utilisateur (Fenêtres et Widgets).
 - `src/app` : Orchestration de l'application.
+- `src/parser` : parsers de données
+- `src/plugins` : plugins additionnels (GPS, Vent...)
 
 ## Auteur
-
-Projet développé avec l'assistance de GitHub Copilot.
+Fabrice Meynckens
+Projet développé avec l'assistance de GitHub Copilot (Gemini 3).
