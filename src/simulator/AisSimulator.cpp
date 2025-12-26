@@ -78,7 +78,7 @@ AisSimulator::AisSimulator(std::unique_ptr<ISimulator> simulator)
     // Initialize default ships if config is empty
     auto config = getConfig();
     if (config.aisTargets.empty()) {
-        // Zigomar
+        // Zigomar : a small sailing boat, very popular in France, see the movie "Liberté Oléron"
         AisTargetConfig zigomar;
         zigomar.name = "ZIGOMAR";
         zigomar.callsign = "FAF9142";
@@ -94,7 +94,7 @@ AisSimulator::AisSimulator(std::unique_ptr<ISimulator> simulator)
         zigomar.longitude = config.startLongitude + 0.015;
         config.aisTargets.push_back(zigomar);
 
-        // Yamato
+        // Yamato : famous Japanese battleship from WW2
         AisTargetConfig yamato;
         yamato.name = "YAMATO";
         yamato.callsign = "JD0001";
@@ -110,7 +110,7 @@ AisSimulator::AisSimulator(std::unique_ptr<ISimulator> simulator)
         yamato.longitude = config.startLongitude - 0.05;
         config.aisTargets.push_back(yamato);
 
-        // Titanic
+        // Titanic : the legendary passenger liner
         AisTargetConfig titanic;
         titanic.callsign = "MUC";
         titanic.name = "TITANIC";
