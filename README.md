@@ -35,6 +35,13 @@ Ce logiciel est prévu pour être capable de tourner sur des architectures lég�
 *   CMake (3.10 ou supérieur)
 *   Compilateur C++ compatible C++20 (MSVC, GCC, Clang)
 
+#### Linux (Ubuntu/Debian)
+Pour compiler sur Linux, vous devez installer les bibliothèques de développement X11 et OpenGL nécessaires pour GLFW :
+```bash
+sudo apt-get update
+sudo apt-get install build-essential cmake libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
+```
+
 ### Instructions de Build
 
 1.  Cloner le dépôt :

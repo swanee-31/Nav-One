@@ -3,6 +3,10 @@
 #include <iostream>
 #include <filesystem>
 
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
+
 namespace App {
 
 PluginManager::PluginManager() {}
@@ -15,7 +19,11 @@ PluginManager::~PluginManager() {
             it->destroyFunc(it->instance);
         }
         if (it->handle) {
+#ifdef _WIN32
             FreeLibrary(it->handle);
+#else
+            dlclose(it->handle);
+#endif
         }
     }
     _plugins.clear();
@@ -27,25 +35,48 @@ void PluginManager::loadPlugin(const std::string& path) {
         if (p.path == path) return;
     }
 
-    HMODULE handle = LoadLibraryA(path.c_str());
+    PluginHandle handle = nullptr;
+    PluginApi::CreatePluginFunc createFunc = nullptr;
+    PluginApi::DestroyPluginFunc destroyFunc = nullptr;
+
+#ifdef _WIN32
+    handle = LoadLibraryA(path.c_str());
     if (!handle) {
         std::cerr << "Failed to load plugin DLL: " << path << " Error: " << GetLastError() << std::endl;
         return;
     }
 
-    auto createFunc = (PluginApi::CreatePluginFunc)GetProcAddress(handle, "createPlugin");
-    auto destroyFunc = (PluginApi::DestroyPluginFunc)GetProcAddress(handle, "destroyPlugin");
+    createFunc = (PluginApi::CreatePluginFunc)GetProcAddress(handle, "createPlugin");
+    destroyFunc = (PluginApi::DestroyPluginFunc)GetProcAddress(handle, "destroyPlugin");
+#else
+    handle = dlopen(path.c_str(), RTLD_NOW);
+    if (!handle) {
+        std::cerr << "Failed to load plugin SO: " << path << " Error: " << dlerror() << std::endl;
+        return;
+    }
+
+    createFunc = (PluginApi::CreatePluginFunc)dlsym(handle, "createPlugin");
+    destroyFunc = (PluginApi::DestroyPluginFunc)dlsym(handle, "destroyPlugin");
+#endif
 
     if (!createFunc || !destroyFunc) {
-        std::cerr << "Invalid plugin DLL (missing factory functions): " << path << std::endl;
+        std::cerr << "Invalid plugin (missing factory functions): " << path << std::endl;
+#ifdef _WIN32
         FreeLibrary(handle);
+#else
+        dlclose(handle);
+#endif
         return;
     }
 
     PluginApi::IPlugin* instance = createFunc();
     if (!instance) {
         std::cerr << "Failed to create plugin instance: " << path << std::endl;
+#ifdef _WIN32
         FreeLibrary(handle);
+#else
+        dlclose(handle);
+#endif
         return;
     }
 
@@ -75,7 +106,11 @@ void PluginManager::unloadPlugin(const std::string& path) {
             it->destroyFunc(it->instance);
         }
         if (it->handle) {
+#ifdef _WIN32
             FreeLibrary(it->handle);
+#else
+            dlclose(it->handle);
+#endif
         }
         _plugins.erase(it);
     }

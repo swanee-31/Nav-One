@@ -5,13 +5,19 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <windows.h>
+
+#ifdef _WIN32
+    #include <windows.h>
+    using PluginHandle = HMODULE;
+#else
+    using PluginHandle = void*;
+#endif
 
 namespace App {
 
 struct LoadedPlugin {
     std::string path;
-    HMODULE handle;
+    PluginHandle handle;
     PluginApi::IPlugin* instance;
     PluginApi::DestroyPluginFunc destroyFunc;
     bool active = true;
