@@ -4,6 +4,12 @@
 #include "../core/NavData.hpp"
 #include <string>
 
+#ifdef _WIN32
+    #define PLUGIN_EXPORT __declspec(dllexport)
+#else
+    #define PLUGIN_EXPORT __attribute__((visibility("default")))
+#endif
+
 namespace PluginApi {
 
 struct PluginContext {

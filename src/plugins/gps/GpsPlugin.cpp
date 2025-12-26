@@ -51,11 +51,11 @@ public:
 
 // Export Factory Functions
 extern "C" {
-    __declspec(dllexport) PluginApi::IPlugin* createPlugin() {
+    PLUGIN_EXPORT PluginApi::IPlugin* createPlugin() {
         return new GpsPlugin();
     }
 
-    __declspec(dllexport) void destroyPlugin(PluginApi::IPlugin* plugin) {
+    PLUGIN_EXPORT void destroyPlugin(PluginApi::IPlugin* plugin) {
         delete plugin;
     }
 }
