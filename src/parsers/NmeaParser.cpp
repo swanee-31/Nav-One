@@ -3,6 +3,11 @@
 #include <iomanip>
 #include <iostream>
 #include <algorithm>
+#include <ctime>
+
+#ifdef _WIN32
+    #define timegm _mkgmtime
+#endif
 
 namespace Parsers {
 
@@ -154,7 +159,7 @@ void NmeaParser::parseRMC(const std::vector<std::string>& tokens, Core::NavData&
                 int year = std::stoi(tokens[9].substr(4, 2));
                 tm.tm_year = (year < 80 ? 2000 + year : 1900 + year) - 1900; // Years since 1900
 
-                time_t time = _mkgmtime(&tm); // Use _mkgmtime for UTC on Windows
+                time_t time = timegm(&tm); // Use timegm for UTC
                 if (time != -1) {
                     data.timestamp = std::chrono::system_clock::from_time_t(time);
                 }
