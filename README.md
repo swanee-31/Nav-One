@@ -42,6 +42,14 @@ sudo apt-get update
 sudo apt-get install build-essential cmake libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
 ```
 
+#### Raspberry Pi (Raspberry Pi OS)
+Les instructions sont identiques à celles pour Debian/Ubuntu. Assurez-vous d'utiliser une version récente de l'OS (Raspberry Pi OS Bookworm ou plus récent) pour disposer d'un compilateur compatible C++20 (GCC 10+).
+
+```bash
+sudo apt-get update
+sudo apt-get install build-essential cmake git libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
+```
+
 ### Instructions de Build
 
 1.  Cloner le dépôt :
@@ -83,5 +91,8 @@ Le projet suit une architecture modulaire :
 - `src/plugins` : plugins additionnels (GPS, Vent...)
 
 ## Auteur
-Fabrice Meynckens
-Projet développé avec l'assistance de GitHub Copilot (Gemini 3).
+Fabrice Meynckens - fabrice.meynckens@gmail.com
+
+## Licence
+MIT
+
