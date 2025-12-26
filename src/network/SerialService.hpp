@@ -21,7 +21,7 @@ public:
 
     void start() override;
     void stop() override;
-    bool isRunning() const override { return running; }
+    bool isRunning() const override { return _running; }
     void send(const std::string& data) override;
 
 private:
@@ -30,19 +30,19 @@ private:
     void doWrite(const std::string& data);
     void checkWriteQueue();
 
-    std::string portName;
-    unsigned int baudRate;
-    DataCallback onDataReceived;
+    std::string _portName;
+    unsigned int _baudRate;
+    DataCallback _onDataReceived;
     
-    asio::io_context ioContext;
-    std::unique_ptr<asio::serial_port> serialPort;
-    std::vector<char> recvBuffer;
+    asio::io_context _ioContext;
+    std::unique_ptr<asio::serial_port> _serialPort;
+    std::vector<char> _recvBuffer;
     
-    std::deque<std::string> writeQueue;
-    bool isWriting = false;
+    std::deque<std::string> _writeQueue;
+    bool _isWriting = false;
 
-    std::thread serviceThread;
-    std::atomic<bool> running{false};
+    std::thread _serviceThread;
+    std::atomic<bool> _running{false};
 };
 
 } // namespace Network

@@ -10,30 +10,30 @@ WindSimulator::WindSimulator(std::unique_ptr<ISimulator> simulator)
 
 void WindSimulator::update(double dt) {
     SimulatorDecorator::update(dt);
-    timeSinceLastEmit += dt * 1000.0; // Convert to ms
+    _timeSinceLastEmit += dt * 1000.0; // Convert to ms
     
     auto config = getConfig();
     if (!config.enableWind) return;
 
     // Wind Logic
-    windTimer += dt;
-    if (windTimer >= 60.0) {
-        windTimer = 0.0;
-        windClockwise = !windClockwise;
-        windSpeedIncreasing = !windSpeedIncreasing;
+    _windTimer += dt;
+    if (_windTimer >= 60.0) {
+        _windTimer = 0.0;
+        _windClockwise = !_windClockwise;
+        _windSpeedIncreasing = !_windSpeedIncreasing;
     }
     
     // Oscillate direction
-    double angleChange = (windClockwise ? 1.0 : -1.0) * dt * 2.0;
-    windAngle += angleChange;
-    if (windAngle < 0) windAngle += 360.0;
-    if (windAngle >= 360.0) windAngle -= 360.0;
+    double angleChange = (_windClockwise ? 1.0 : -1.0) * dt * 2.0;
+    _windAngle += angleChange;
+    if (_windAngle < 0) _windAngle += 360.0;
+    if (_windAngle >= 360.0) _windAngle -= 360.0;
     
     // Oscillate speed
-    double speedChange = (windSpeedIncreasing ? 0.1 : -0.1) * dt;
-    windSpeed += speedChange;
-    if (windSpeed < 0) { windSpeed = 0; windSpeedIncreasing = true; }
-    if (windSpeed > 30) { windSpeed = 30; windSpeedIncreasing = false; }
+    double speedChange = (_windSpeedIncreasing ? 0.1 : -0.1) * dt;
+    _windSpeed += speedChange;
+    if (_windSpeed < 0) { _windSpeed = 0; _windSpeedIncreasing = true; }
+    if (_windSpeed > 30) { _windSpeed = 30; _windSpeedIncreasing = false; }
 }
 
 Core::NavData WindSimulator::getCurrentData() const {
@@ -42,8 +42,8 @@ Core::NavData WindSimulator::getCurrentData() const {
     
     if (config.enableWind) {
         data.hasWind = true;
-        data.windAngle = windAngle;
-        data.windSpeed = windSpeed;
+        data.windAngle = _windAngle;
+        data.windSpeed = _windSpeed;
     }
     
     return data;
@@ -53,12 +53,12 @@ std::vector<std::string> WindSimulator::getNmeaSentences() const {
     auto sentences = SimulatorDecorator::getNmeaSentences();
     auto config = getConfig();
     
-    if (config.enableWind && timeSinceLastEmit >= config.windFrequency) {
+    if (config.enableWind && _timeSinceLastEmit >= config.windFrequency) {
         auto data = getCurrentData();
         // Override data with local wind state because BaseSimulator doesn't know about wind
         // Wait, getCurrentData() above already merges it.
         sentences.push_back(generateMWV(data));
-        timeSinceLastEmit = 0.0;
+        _timeSinceLastEmit = 0.0;
     }
     
     return sentences;

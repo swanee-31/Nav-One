@@ -18,8 +18,8 @@ public:
     ~ServiceManager();
 
     void setLogCallback(LogCallback callback) { 
-        std::lock_guard<std::recursive_mutex> lock(mutex);
-        logCallback = callback; 
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        _logCallback = callback; 
     }
 
     void loadConfig();
@@ -30,17 +30,17 @@ public:
     void stopAll();
 
     // Thread-safe accessors for GUI
-    std::vector<DataSourceConfig>& getSources() { return sources; }
-    const std::vector<DataSourceConfig>& getSources() const { return sources; }
+    std::vector<DataSourceConfig>& getSources() { return _sources; }
+    const std::vector<DataSourceConfig>& getSources() const { return _sources; }
     
-    std::vector<DataOutputConfig>& getOutputs() { return outputs; }
-    const std::vector<DataOutputConfig>& getOutputs() const { return outputs; }
+    std::vector<DataOutputConfig>& getOutputs() { return _outputs; }
+    const std::vector<DataOutputConfig>& getOutputs() const { return _outputs; }
     
     // Locking helper for GUI
-    std::unique_lock<std::recursive_mutex> getLock() const { return std::unique_lock<std::recursive_mutex>(mutex); }
+    std::unique_lock<std::recursive_mutex> getLock() const { return std::unique_lock<std::recursive_mutex>(_mutex); }
 
-    const std::map<std::string, std::unique_ptr<Network::IService>>& getActiveServices() const { return activeServices; }
-    const std::map<std::string, std::unique_ptr<Network::IService>>& getActiveOutputs() const { return activeOutputs; }
+    const std::map<std::string, std::unique_ptr<Network::IService>>& getActiveServices() const { return _activeServices; }
+    const std::map<std::string, std::unique_ptr<Network::IService>>& getActiveOutputs() const { return _activeOutputs; }
 
     void updateOutputState(const DataOutputConfig& config);
     void stopOutput(const std::string& id);
@@ -51,14 +51,14 @@ public:
     bool isSourceEnabled(const std::string& id) const;
 
 private:
-    mutable std::recursive_mutex mutex;
-    std::vector<DataSourceConfig> sources;
-    std::vector<DataOutputConfig> outputs;
+    mutable std::recursive_mutex _mutex;
+    std::vector<DataSourceConfig> _sources;
+    std::vector<DataOutputConfig> _outputs;
     
-    std::map<std::string, std::unique_ptr<Network::IService>> activeServices;
-    std::map<std::string, std::unique_ptr<Network::IService>> activeOutputs;
+    std::map<std::string, std::unique_ptr<Network::IService>> _activeServices;
+    std::map<std::string, std::unique_ptr<Network::IService>> _activeOutputs;
     
-    LogCallback logCallback;
+    LogCallback _logCallback;
 };
 
 } // namespace App

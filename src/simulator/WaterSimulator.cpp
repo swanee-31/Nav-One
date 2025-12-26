@@ -8,22 +8,22 @@ namespace Simulator {
 WaterSimulator::WaterSimulator(std::unique_ptr<ISimulator> simulator)
     : SimulatorDecorator(std::move(simulator)) {
     auto config = getConfig();
-    currentDepth = config.minDepth;
-    currentWaterTemp = config.minWaterTemp;
+    _currentDepth = config.minDepth;
+    _currentWaterTemp = config.minWaterTemp;
 }
 
 void WaterSimulator::update(double dt) {
     SimulatorDecorator::update(dt);
-    timeSinceLastEmit += dt * 1000.0; // Convert to ms
+    _timeSinceLastEmit += dt * 1000.0; // Convert to ms
     
     auto config = getConfig();
     if (!config.enableWater) return;
 
     // Oscillation logic (1 minute period)
-    timer += dt;
-    if (timer >= 60.0) {
-        timer = 0.0;
-        increasing = !increasing;
+    _timer += dt;
+    if (_timer >= 60.0) {
+        _timer = 0.0;
+        _increasing = !_increasing;
     }
     
     // Linear interpolation based on timer/60.0 would be a sawtooth wave if we just reset.
@@ -32,10 +32,10 @@ void WaterSimulator::update(double dt) {
     // Or just linear back and forth as requested "min et max".
     
     double factor = 0.0;
-    if (increasing) {
-        factor = timer / 60.0;
+    if (_increasing) {
+        factor = _timer / 60.0;
     } else {
-        factor = 1.0 - (timer / 60.0);
+        factor = 1.0 - (_timer / 60.0);
     }
     
     // Use sine for smoother "natural" feel
@@ -43,10 +43,10 @@ void WaterSimulator::update(double dt) {
     // val = min + (max-min) * (0.5 * (1 + sin(2*PI * t / 60)))
     // This goes min->max->min in 60 seconds.
     
-    double sineFactor = 0.5 * (1.0 + std::sin(2.0 * 3.14159 * timer / 60.0));
+    double sineFactor = 0.5 * (1.0 + std::sin(2.0 * 3.14159 * _timer / 60.0));
     
-    currentDepth = config.minDepth + (config.maxDepth - config.minDepth) * sineFactor;
-    currentWaterTemp = config.minWaterTemp + (config.maxWaterTemp - config.minWaterTemp) * sineFactor;
+    _currentDepth = config.minDepth + (config.maxDepth - config.minDepth) * sineFactor;
+    _currentWaterTemp = config.minWaterTemp + (config.maxWaterTemp - config.minWaterTemp) * sineFactor;
 }
 
 Core::NavData WaterSimulator::getCurrentData() const {
@@ -55,10 +55,10 @@ Core::NavData WaterSimulator::getCurrentData() const {
     
     if (config.enableWater) {
         data.hasDepth = true;
-        data.depth = currentDepth;
+        data.depth = _currentDepth;
         
         data.hasWaterTemperature = true;
-        data.waterTemperature = currentWaterTemp;
+        data.waterTemperature = _currentWaterTemp;
         
         data.hasWaterSpeed = true;
         data.speedThroughWater = data.speedOverGround; // Assume STW = SOG for sim
@@ -74,14 +74,14 @@ std::vector<std::string> WaterSimulator::getNmeaSentences() const {
     auto sentences = SimulatorDecorator::getNmeaSentences();
     auto config = getConfig();
     
-    if (config.enableWater && timeSinceLastEmit >= config.waterFrequency) {
+    if (config.enableWater && _timeSinceLastEmit >= config.waterFrequency) {
         auto data = getCurrentData();
         sentences.push_back(generateDBS(data));
         sentences.push_back(generateDPT(data));
         sentences.push_back(generateMTW(data));
         sentences.push_back(generateHDT(data));
         sentences.push_back(generateVHW(data));
-        timeSinceLastEmit = 0.0;
+        _timeSinceLastEmit = 0.0;
     }
     
     return sentences;

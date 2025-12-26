@@ -20,24 +20,24 @@ ServiceManager::~ServiceManager() {
 }
 
 void ServiceManager::loadConfig() {
-    std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     Utils::ConfigManager::instance().load();
-    sources = Utils::ConfigManager::instance().getSources();
-    outputs = Utils::ConfigManager::instance().getOutputs();
+    _sources = Utils::ConfigManager::instance().getSources();
+    _outputs = Utils::ConfigManager::instance().getOutputs();
 
-    if (sources.empty()) {
+    if (_sources.empty()) {
         DataSourceConfig udpSource;
         udpSource.id = "UDP_DEFAULT";
         udpSource.name = "Default UDP Listener";
         udpSource.type = SourceType::Udp;
         udpSource.port = 10110;
         udpSource.enabled = false;
-        sources.push_back(udpSource);
+        _sources.push_back(udpSource);
     }
 
     // Ensure Simulator source exists
     bool simExists = false;
-    for (const auto& source : sources) {
+    for (const auto& source : _sources) {
         if (source.id == "SIMULATOR") {
             simExists = true;
             break;
@@ -49,16 +49,16 @@ void ServiceManager::loadConfig() {
         simSource.name = "Internal Simulator";
         simSource.type = SourceType::Simulator;
         simSource.enabled = false; // Disabled by default as requested
-        sources.push_back(simSource);
+        _sources.push_back(simSource);
     }
 
-    for (const auto& source : sources) {
+    for (const auto& source : _sources) {
         if (source.enabled) {
             updateServiceState(source);
         }
     }
 
-    for (const auto& output : outputs) {
+    for (const auto& output : _outputs) {
         if (output.enabled) {
             updateOutputState(output);
         }
@@ -66,50 +66,50 @@ void ServiceManager::loadConfig() {
 }
 
 void ServiceManager::saveConfig() {
-    std::lock_guard<std::recursive_mutex> lock(mutex);
-    Utils::ConfigManager::instance().setSources(sources);
-    Utils::ConfigManager::instance().setOutputs(outputs);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    Utils::ConfigManager::instance().setSources(_sources);
+    Utils::ConfigManager::instance().setOutputs(_outputs);
     Utils::ConfigManager::instance().save();
 }
 
 void ServiceManager::stopAll() {
-    std::lock_guard<std::recursive_mutex> lock(mutex);
-    for (auto& pair : activeServices) {
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    for (auto& pair : _activeServices) {
         if (pair.second) pair.second->stop();
     }
-    activeServices.clear();
+    _activeServices.clear();
 
-    for (auto& pair : activeOutputs) {
+    for (auto& pair : _activeOutputs) {
         if (pair.second) pair.second->stop();
     }
-    activeOutputs.clear();
+    _activeOutputs.clear();
 }
 
 void ServiceManager::stopService(const std::string& id) {
-    std::lock_guard<std::recursive_mutex> lock(mutex);
-    auto it = activeServices.find(id);
-    if (it != activeServices.end()) {
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    auto it = _activeServices.find(id);
+    if (it != _activeServices.end()) {
         if (it->second) {
             it->second->stop();
         }
-        activeServices.erase(it);
+        _activeServices.erase(it);
     }
 }
 
 void ServiceManager::stopOutput(const std::string& id) {
-    std::lock_guard<std::recursive_mutex> lock(mutex);
-    auto it = activeOutputs.find(id);
-    if (it != activeOutputs.end()) {
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    auto it = _activeOutputs.find(id);
+    if (it != _activeOutputs.end()) {
         if (it->second) {
             it->second->stop();
         }
-        activeOutputs.erase(it);
+        _activeOutputs.erase(it);
     }
 }
 
 void ServiceManager::broadcast(const std::string& data, const std::string& sourceId) {
-    std::lock_guard<std::recursive_mutex> lock(mutex);
-    for (const auto& outputConfig : outputs) {
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    for (const auto& outputConfig : _outputs) {
         if (!outputConfig.enabled) continue;
 
         // Check multiplexing rules
@@ -124,8 +124,8 @@ void ServiceManager::broadcast(const std::string& data, const std::string& sourc
         }
 
         if (shouldSend) {
-            auto it = activeOutputs.find(outputConfig.id);
-            if (it != activeOutputs.end() && it->second && it->second->isRunning()) {
+            auto it = _activeOutputs.find(outputConfig.id);
+            if (it != _activeOutputs.end() && it->second && it->second->isRunning()) {
                 it->second->send(data);
             }
         }
@@ -133,7 +133,7 @@ void ServiceManager::broadcast(const std::string& data, const std::string& sourc
 }
 
 void ServiceManager::updateOutputState(const DataOutputConfig& config) {
-    std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (!config.enabled) {
         stopOutput(config.id);
         return;
@@ -150,11 +150,11 @@ void ServiceManager::updateOutputState(const DataOutputConfig& config) {
             auto service = std::make_unique<Network::SerialService>(config.portName, config.baudRate, 
                 [](const std::vector<char>&, const std::string&) {});
             service->start();
-            activeOutputs[config.id] = std::move(service);
+            _activeOutputs[config.id] = std::move(service);
         } else if (config.type == OutputType::Udp) {
             auto service = std::make_unique<Network::UdpSender>(config.address, config.port);
             service->start();
-            activeOutputs[config.id] = std::move(service);
+            _activeOutputs[config.id] = std::move(service);
         }
     } catch (const std::exception& e) {
         std::cerr << "Failed to start output " << config.name << ": " << e.what() << std::endl;
@@ -162,7 +162,7 @@ void ServiceManager::updateOutputState(const DataOutputConfig& config) {
 }
 
 void ServiceManager::updateServiceState(const DataSourceConfig& config) {
-    std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (!config.enabled) {
         stopService(config.id);
         return;
@@ -174,7 +174,7 @@ void ServiceManager::updateServiceState(const DataSourceConfig& config) {
         if (config.type == SourceType::Simulator) {
             auto service = std::make_unique<Network::SimulatorService>();
             service->start();
-            activeServices[config.id] = std::move(service);
+            _activeServices[config.id] = std::move(service);
             return;
         } else if (config.type == SourceType::Serial) {
             auto service = std::make_unique<Network::SerialService>(config.portName, config.baudRate, 
@@ -193,8 +193,8 @@ void ServiceManager::updateServiceState(const DataSourceConfig& config) {
                         broadcast(fullSentence + "\r\n", id);
 
                         {
-                            std::lock_guard<std::recursive_mutex> cbLock(mutex);
-                            if (logCallback) logCallback("SERIAL:" + id, fullSentence);
+                            std::lock_guard<std::recursive_mutex> cbLock(_mutex);
+                            if (_logCallback) _logCallback("SERIAL:" + id, fullSentence);
                         }
 
                         Core::NavData navData;
@@ -207,7 +207,7 @@ void ServiceManager::updateServiceState(const DataSourceConfig& config) {
                     }
                 });
             service->start();
-            activeServices[config.id] = std::move(service);
+            _activeServices[config.id] = std::move(service);
         } else if (config.type == SourceType::Udp) {
             auto service = std::make_unique<Network::UdpService>(config.port, 
                 [this, id = config.id](const std::vector<char>& data, const std::string& source) {
@@ -222,8 +222,8 @@ void ServiceManager::updateServiceState(const DataSourceConfig& config) {
                     broadcast(sentence + "\r\n", id);
 
                     {
-                        std::lock_guard<std::recursive_mutex> cbLock(mutex);
-                        if (logCallback) logCallback("UDP:" + id, sentence);
+                        std::lock_guard<std::recursive_mutex> cbLock(_mutex);
+                        if (_logCallback) _logCallback("UDP:" + id, sentence);
                     }
 
                     Core::NavData navData;
@@ -235,7 +235,7 @@ void ServiceManager::updateServiceState(const DataSourceConfig& config) {
                     }
                 });
             service->start();
-            activeServices[config.id] = std::move(service);
+            _activeServices[config.id] = std::move(service);
         }
     } catch (const std::exception& e) {
         std::cerr << "Failed to start service " << config.name << ": " << e.what() << std::endl;
@@ -243,8 +243,8 @@ void ServiceManager::updateServiceState(const DataSourceConfig& config) {
 }
 
 bool ServiceManager::isSourceEnabled(const std::string& id) const {
-    std::lock_guard<std::recursive_mutex> lock(mutex);
-    for (const auto& source : sources) {
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    for (const auto& source : _sources) {
         if (source.id == id) return source.enabled;
     }
     return false;

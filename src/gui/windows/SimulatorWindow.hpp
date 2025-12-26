@@ -1,6 +1,7 @@
 #pragma once
 #include "imgui.h"
 #include "simulator/ISimulator.hpp"
+#include "utils/ConfigManager.hpp"
 #include <vector>
 #include <string>
 
@@ -8,19 +9,19 @@ namespace Gui {
 
 class SimulatorWindow {
 public:
-    SimulatorWindow(Simulator::ISimulator& sim) : simulator(sim) {}
+    SimulatorWindow(Simulator::ISimulator& sim) : _simulator(sim) {}
 
-    void show() { visible = true; }
-    bool isVisible() const { return visible; }
-    void toggle() { visible = !visible; }
+    void show() { _visible = true; }
+    bool isVisible() const { return _visible; }
+    void toggle() { _visible = !_visible; }
 
     void render() {
-        if (!visible) return;
+        if (!_visible) return;
 
         ImGui::SetNextWindowSize(ImVec2(500, 600), ImGuiCond_FirstUseEver);
-        if (ImGui::Begin("Simulator Configuration", &visible)) {
+        if (ImGui::Begin("Simulator Configuration", &_visible)) {
             
-            auto config = simulator.getConfig();
+            auto config = _simulator.getConfig();
             bool changed = false;
 
             if (ImGui::BeginTabBar("SimTabs")) {
@@ -43,11 +44,11 @@ public:
 
                     if (ImGui::InputDouble("Start Latitude", &config.startLatitude, 0.0001, 1.0, "%.6f")) {
                         changed = true;
-                        simulator.setPosition(config.startLatitude, config.startLongitude);
+                        _simulator.setPosition(config.startLatitude, config.startLongitude);
                     }
                     if (ImGui::InputDouble("Start Longitude", &config.startLongitude, 0.0001, 1.0, "%.6f")) {
                         changed = true;
-                        simulator.setPosition(config.startLatitude, config.startLongitude);
+                        _simulator.setPosition(config.startLatitude, config.startLongitude);
                     }
                     
                     if (ImGui::InputDouble("Base Speed (kn)", &config.baseSpeed, 0.1, 1.0, "%.1f")) changed = true;
@@ -123,7 +124,9 @@ public:
             }
 
             if (changed) {
-                simulator.setConfig(config);
+                _simulator.setConfig(config);
+                Utils::ConfigManager::instance().setSimulatorConfig(config);
+                Utils::ConfigManager::instance().save();
             }
 
             ImGui::Spacing();
@@ -131,13 +134,13 @@ public:
             ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Note: Speed and Course will vary +/- 10%% automatically.");
             ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Wind will rotate 360 deg every minute.");
 
-            ImGui::End();
         }
+        ImGui::End();
     }
 
 private:
-    bool visible = false;
-    Simulator::ISimulator& simulator;
+    bool _visible = false;
+    Simulator::ISimulator& _simulator;
 
     bool renderFrequencyCombo(const char* label, int& currentFreq) {
         const std::vector<int> freqs = {100, 200, 300, 400, 500, 800, 1000, 1500, 2000};

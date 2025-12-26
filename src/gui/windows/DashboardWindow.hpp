@@ -18,10 +18,10 @@ public:
     void updateData(const Core::NavData& data);
 
 private:
-    std::mutex dataMutex;
-    Core::NavData lastData;
-    std::string lastSource = "None";
-    uint64_t packetCount = 0;
+    std::mutex _dataMutex;
+    Core::NavData _lastData;
+    std::string _lastSource = "None";
+    uint64_t _packetCount = 0;
 };
 
 } // namespace Gui

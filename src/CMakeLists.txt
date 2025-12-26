@@ -147,3 +147,17 @@ target_sources(NavOne PRIVATE
     ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 )
+
+# --- Installation ---
+
+# Install Executable
+install(TARGETS NavOne
+    RUNTIME DESTINATION bin
+)
+
+# Install Plugins
+install(TARGETS GpsPlugin GpsBigPlugin WindPlugin WaterPlugin
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION bin
+    ARCHIVE DESTINATION lib
+)

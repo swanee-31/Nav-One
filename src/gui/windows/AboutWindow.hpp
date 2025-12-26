@@ -10,16 +10,16 @@ namespace Gui {
 
 class AboutWindow {
 public:
-    void show() { visible = true; }
-    bool isVisible() const { return visible; }
-    void toggle() { visible = !visible; }
+    void show() { _visible = true; }
+    bool isVisible() const { return _visible; }
+    void toggle() { _visible = !_visible; }
 
     void render() {
-        if (!visible) return;
+        if (!_visible) return;
 
         ImGui::OpenPopup("About NavOne");
 
-        if (ImGui::BeginPopupModal("About NavOne", &visible, ImGuiWindowFlags_AlwaysAutoResize)) {
+        if (ImGui::BeginPopupModal("About NavOne", &_visible, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::Text("NavOne - Navigation Hub");
             ImGui::Separator();
             ImGui::Text("Version: %s", NAVONE_GIT_VERSION);
@@ -31,7 +31,7 @@ public:
             ImGui::Spacing();
             
             if (ImGui::Button("Close", ImVec2(120, 0))) { 
-                visible = false; 
+                _visible = false; 
                 ImGui::CloseCurrentPopup(); 
             }
             ImGui::EndPopup();
@@ -39,7 +39,7 @@ public:
     }
 
 private:
-    bool visible = false;
+    bool _visible = false;
 };
 
 } // namespace Gui

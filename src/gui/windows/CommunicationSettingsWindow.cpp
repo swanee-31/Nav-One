@@ -7,20 +7,20 @@
 namespace Gui {
 
 CommunicationSettingsWindow::CommunicationSettingsWindow(App::ServiceManager& manager) 
-    : serviceManager(manager) {}
+    : _serviceManager(manager) {}
 
 void CommunicationSettingsWindow::render() {
-    if (!visible) return;
+    if (!_visible) return;
 
     ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("Communication Settings", &visible)) {
-        auto lock = serviceManager.getLock();
+    if (ImGui::Begin("Communication Settings", &_visible)) {
+        auto lock = _serviceManager.getLock();
         
         if (ImGui::BeginTabBar("CommSettingsTabBar")) {
             
             // --- INPUTS TAB ---
             if (ImGui::BeginTabItem("Inputs")) {
-                auto& sources = serviceManager.getSources();
+                auto& sources = _serviceManager.getSources();
 
                 // Split window into two columns
                 ImGui::Columns(2, "InputColumns", true);
@@ -47,7 +47,7 @@ void CommunicationSettingsWindow::render() {
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Remove") && selectedSourceIdx >= 0 && selectedSourceIdx < sources.size()) {
-                    serviceManager.stopService(sources[selectedSourceIdx].id);
+                    _serviceManager.stopService(sources[selectedSourceIdx].id);
                     sources.erase(sources.begin() + selectedSourceIdx);
                     selectedSourceIdx = -1;
                 }
@@ -70,7 +70,7 @@ void CommunicationSettingsWindow::render() {
                     bool enabled = config.enabled;
                     if (ImGui::Checkbox("Enabled", &enabled)) {
                         config.enabled = enabled;
-                        serviceManager.updateServiceState(config);
+                        _serviceManager.updateServiceState(config);
                     }
 
                     // Source Type Combo
@@ -78,7 +78,7 @@ void CommunicationSettingsWindow::render() {
                     int currentType = (int)config.type;
                     if (ImGui::Combo("Type", &currentType, types, IM_ARRAYSIZE(types))) {
                         config.type = (App::SourceType)currentType;
-                        if (config.enabled) serviceManager.updateServiceState(config);
+                        if (config.enabled) _serviceManager.updateServiceState(config);
                     }
 
                     if (config.type == App::SourceType::Simulator) {
@@ -95,7 +95,7 @@ void CommunicationSettingsWindow::render() {
                                 bool isSelected = (config.portName == port.port);
                                 if (ImGui::Selectable(port.port.c_str(), isSelected)) {
                                     config.portName = port.port;
-                                    if (config.enabled) serviceManager.updateServiceState(config);
+                                    if (config.enabled) _serviceManager.updateServiceState(config);
                                 }
                                 if (isSelected) ImGui::SetItemDefaultFocus();
                             }
@@ -116,14 +116,14 @@ void CommunicationSettingsWindow::render() {
                         if (ImGui::Combo("Baud Rate", &selectedBaud, baudRateLabels, IM_ARRAYSIZE(baudRateLabels))) {
                             if (selectedBaud >= 0) {
                                 config.baudRate = baudRates[selectedBaud];
-                                if (config.enabled) serviceManager.updateServiceState(config);
+                                if (config.enabled) _serviceManager.updateServiceState(config);
                             }
                         }
 
                     } else if (config.type == App::SourceType::Udp) {
                         // UDP Settings
                         if (ImGui::InputInt("Port", &config.port)) {
-                            if (config.enabled) serviceManager.updateServiceState(config);
+                            if (config.enabled) _serviceManager.updateServiceState(config);
                         }
                     }
                     
@@ -138,7 +138,7 @@ void CommunicationSettingsWindow::render() {
 
             // --- OUTPUTS TAB ---
             if (ImGui::BeginTabItem("Outputs")) {
-                auto& outputs = serviceManager.getOutputs();
+                auto& outputs = _serviceManager.getOutputs();
 
                 ImGui::Columns(2, "OutputColumns", true);
                 
@@ -163,7 +163,7 @@ void CommunicationSettingsWindow::render() {
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Remove") && selectedOutputIdx >= 0 && selectedOutputIdx < outputs.size()) {
-                    serviceManager.stopOutput(outputs[selectedOutputIdx].id);
+                    _serviceManager.stopOutput(outputs[selectedOutputIdx].id);
                     outputs.erase(outputs.begin() + selectedOutputIdx);
                     selectedOutputIdx = -1;
                 }
@@ -185,14 +185,14 @@ void CommunicationSettingsWindow::render() {
                     bool enabled = config.enabled;
                     if (ImGui::Checkbox("Enabled", &enabled)) {
                         config.enabled = enabled;
-                        serviceManager.updateOutputState(config);
+                        _serviceManager.updateOutputState(config);
                     }
 
                     const char* types[] = { "Serial", "UDP" };
                     int currentType = (int)config.type;
                     if (ImGui::Combo("Type", &currentType, types, IM_ARRAYSIZE(types))) {
                         config.type = (App::OutputType)currentType;
-                        if (config.enabled) serviceManager.updateOutputState(config);
+                        if (config.enabled) _serviceManager.updateOutputState(config);
                     }
 
                     if (config.type == App::OutputType::Serial) {
@@ -206,7 +206,7 @@ void CommunicationSettingsWindow::render() {
                                 bool isSelected = (config.portName == port.port);
                                 if (ImGui::Selectable(port.port.c_str(), isSelected)) {
                                     config.portName = port.port;
-                                    if (config.enabled) serviceManager.updateOutputState(config);
+                                    if (config.enabled) _serviceManager.updateOutputState(config);
                                 }
                                 if (isSelected) ImGui::SetItemDefaultFocus();
                             }
@@ -214,7 +214,7 @@ void CommunicationSettingsWindow::render() {
                         }
                         
                         if (ImGui::InputInt("Baud Rate", &config.baudRate)) {
-                            if (config.enabled) serviceManager.updateOutputState(config);
+                            if (config.enabled) _serviceManager.updateOutputState(config);
                         }
 
                     } else if (config.type == App::OutputType::Udp) {
@@ -222,11 +222,11 @@ void CommunicationSettingsWindow::render() {
                         strncpy(addrBuf, config.address.c_str(), sizeof(addrBuf));
                         if (ImGui::InputText("Target IP", addrBuf, sizeof(addrBuf))) {
                             config.address = addrBuf;
-                            if (config.enabled) serviceManager.updateOutputState(config);
+                            if (config.enabled) _serviceManager.updateOutputState(config);
                         }
 
                         if (ImGui::InputInt("Target Port", &config.port)) {
-                            if (config.enabled) serviceManager.updateOutputState(config);
+                            if (config.enabled) _serviceManager.updateOutputState(config);
                         }
                     }
 
@@ -260,7 +260,7 @@ void CommunicationSettingsWindow::render() {
                             }
                         }
 
-                        const auto& sources = serviceManager.getSources();
+                        const auto& sources = _serviceManager.getSources();
                         for (const auto& source : sources) {
                             bool isSelected = false;
                             for (const auto& id : config.sourceIds) {
@@ -296,11 +296,11 @@ void CommunicationSettingsWindow::render() {
         
         ImGui::Separator();
         if (ImGui::Button("Save Configuration")) {
-            serviceManager.saveConfig();
+            _serviceManager.saveConfig();
         }
 
-        ImGui::End();
     }
+    ImGui::End();
 }
 
 } // namespace Gui

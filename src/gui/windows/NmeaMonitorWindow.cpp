@@ -5,52 +5,52 @@ namespace Gui {
 NmeaMonitorWindow::NmeaMonitorWindow() {}
 
 void NmeaMonitorWindow::addLog(const std::string& source, const std::string& frame) {
-    if (!visible) return;
+    if (!_visible) return;
     
-    std::lock_guard<std::mutex> lock(logMutex);
+    std::lock_guard<std::mutex> lock(_logMutex);
     
-    if (paused) return; // Don't add logs if paused
+    if (_paused) return; // Don't add logs if paused
 
     std::string logEntry = "[" + source + "] " + frame + "\n";
-    logs.push_back(logEntry);
-    if (logs.size() > MAX_LOGS) {
-        logs.pop_front();
+    _logs.push_back(logEntry);
+    if (_logs.size() > _maxLogs) {
+        _logs.pop_front();
     }
 
     // Rebuild buffer for InputTextMultiline
     // Optimization: In a real app, we might want to append or use a circular buffer, 
     // but for 100 lines, rebuilding is fine.
-    textBuffer.clear();
-    for (const auto& log : logs) {
-        textBuffer += log;
+    _textBuffer.clear();
+    for (const auto& log : _logs) {
+        _textBuffer += log;
     }
 }
 
 void NmeaMonitorWindow::render() {
-    if (!visible) return;
+    if (!_visible) return;
 
     ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("NMEA Monitor", &visible)) {
+    if (ImGui::Begin("NMEA Monitor", &_visible)) {
         
         if (ImGui::Button("Clear")) {
-            std::lock_guard<std::mutex> lock(logMutex);
-            logs.clear();
-            textBuffer.clear();
+            std::lock_guard<std::mutex> lock(_logMutex);
+            _logs.clear();
+            _textBuffer.clear();
         }
         ImGui::SameLine();
-        ImGui::Checkbox("Pause", &paused);
+        ImGui::Checkbox("Pause", &_paused);
         ImGui::SameLine();
-        ImGui::Checkbox("Auto-scroll", &autoScroll);
+        ImGui::Checkbox("Auto-scroll", &_autoScroll);
         
         ImGui::Separator();
         
         // Use InputTextMultiline for selection support
         // ReadOnly flag prevents editing
-        std::lock_guard<std::mutex> lock(logMutex);
-        ImGui::InputTextMultiline("##logs", &textBuffer[0], textBuffer.size() + 1, 
+        std::lock_guard<std::mutex> lock(_logMutex);
+        ImGui::InputTextMultiline("##logs", &_textBuffer[0], _textBuffer.size() + 1, 
             ImVec2(-FLT_MIN, -FLT_MIN), ImGuiInputTextFlags_ReadOnly);
 
-        if (autoScroll && !paused && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+        if (_autoScroll && !_paused && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
             ImGui::SetScrollHereY(1.0f);
     }
     ImGui::End();

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "../app/DataSourceConfig.hpp"
+#include "../simulator/SimulatorConfig.hpp"
 
 namespace Utils {
 
@@ -17,20 +18,24 @@ public:
     void save(const std::string& filename = "nav-one.xml");
 
     // App Configuration
-    std::vector<App::DataSourceConfig> getSources() const { return sources; }
-    void setSources(const std::vector<App::DataSourceConfig>& newSources) { sources = newSources; }
+    std::vector<App::DataSourceConfig> getSources() const { return _sources; }
+    void setSources(const std::vector<App::DataSourceConfig>& newSources) { _sources = newSources; }
 
-    std::vector<App::DataOutputConfig> getOutputs() const { return outputs; }
-    void setOutputs(const std::vector<App::DataOutputConfig>& newOutputs) { outputs = newOutputs; }
+    std::vector<App::DataOutputConfig> getOutputs() const { return _outputs; }
+    void setOutputs(const std::vector<App::DataOutputConfig>& newOutputs) { _outputs = newOutputs; }
 
-    App::DisplayConfig getDisplayConfig() const { return displayConfig; }
-    void setDisplayConfig(const App::DisplayConfig& config) { displayConfig = config; }
+    App::DisplayConfig getDisplayConfig() const { return _displayConfig; }
+    void setDisplayConfig(const App::DisplayConfig& config) { _displayConfig = config; }
+
+    Simulator::SimulatorConfig getSimulatorConfig() const { return _simulatorConfig; }
+    void setSimulatorConfig(const Simulator::SimulatorConfig& config) { _simulatorConfig = config; }
 
 private:
     ConfigManager() = default;
-    std::vector<App::DataSourceConfig> sources;
-    std::vector<App::DataOutputConfig> outputs;
-    App::DisplayConfig displayConfig;
+    std::vector<App::DataSourceConfig> _sources;
+    std::vector<App::DataOutputConfig> _outputs;
+    App::DisplayConfig _displayConfig;
+    Simulator::SimulatorConfig _simulatorConfig;
 };
 
 } // namespace Utils

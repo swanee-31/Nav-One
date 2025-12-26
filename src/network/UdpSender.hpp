@@ -17,25 +17,25 @@ public:
 
     void start() override;
     void stop() override;
-    bool isRunning() const override { return running; }
+    bool isRunning() const override { return _running; }
     void send(const std::string& data) override;
 
 private:
     void doSend(const std::string& data);
     void checkSendQueue();
 
-    std::string targetAddress;
-    int targetPort;
+    std::string _targetAddress;
+    int _targetPort;
     
-    asio::io_context ioContext;
-    std::unique_ptr<asio::ip::udp::socket> socket;
-    asio::ip::udp::endpoint remoteEndpoint;
+    asio::io_context _ioContext;
+    std::unique_ptr<asio::ip::udp::socket> _socket;
+    asio::ip::udp::endpoint _remoteEndpoint;
     
-    std::deque<std::string> sendQueue;
-    bool isSending = false;
+    std::deque<std::string> _sendQueue;
+    bool _isSending = false;
 
-    std::thread serviceThread;
-    std::atomic<bool> running{false};
+    std::thread _serviceThread;
+    std::atomic<bool> _running{false};
 };
 
 } // namespace Network

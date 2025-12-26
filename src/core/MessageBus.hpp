@@ -20,20 +20,20 @@ public:
     }
 
     ListenerId subscribe(Callback callback) {
-        std::lock_guard<std::mutex> lock(mutex);
-        ListenerId id = nextId++;
-        listeners[id] = callback;
+        std::lock_guard<std::mutex> lock(_mutex);
+        ListenerId id = _nextId++;
+        _listeners[id] = callback;
         return id;
     }
 
     void unsubscribe(ListenerId id) {
-        std::lock_guard<std::mutex> lock(mutex);
-        listeners.erase(id);
+        std::lock_guard<std::mutex> lock(_mutex);
+        _listeners.erase(id);
     }
 
     void publish(const NavData& data) {
-        std::lock_guard<std::mutex> lock(mutex);
-        for (const auto& [id, callback] : listeners) {
+        std::lock_guard<std::mutex> lock(_mutex);
+        for (const auto& [id, callback] : _listeners) {
             callback(data);
         }
     }
@@ -44,9 +44,9 @@ private:
     MessageBus(const MessageBus&) = delete;
     MessageBus& operator=(const MessageBus&) = delete;
 
-    std::mutex mutex;
-    std::map<ListenerId, Callback> listeners;
-    ListenerId nextId = 0;
+    std::mutex _mutex;
+    std::map<ListenerId, Callback> _listeners;
+    ListenerId _nextId = 0;
 };
 
 } // namespace Core

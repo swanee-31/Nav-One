@@ -3,7 +3,7 @@
 namespace Network {
 
 UdpService::UdpService(int p, DataCallback callback) 
-    : port(p), onDataReceived(callback), recvBuffer(4096) { // 4KB buffer
+    : _port(p), _onDataReceived(callback), _recvBuffer(4096) { // 4KB buffer
 }
 
 UdpService::~UdpService() {
@@ -11,45 +11,45 @@ UdpService::~UdpService() {
 }
 
 void UdpService::start() {
-    if (running) return;
-    running = true;
+    if (_running) return;
+    _running = true;
 
     try {
-        socket = std::make_unique<asio::ip::udp::socket>(ioContext, asio::ip::udp::endpoint(asio::ip::udp::v4(), port));
+        _socket = std::make_unique<asio::ip::udp::socket>(_ioContext, asio::ip::udp::endpoint(asio::ip::udp::v4(), _port));
         startReceive();
 
-        serviceThread = std::thread([this]() {
+        _serviceThread = std::thread([this]() {
             try {
-                ioContext.run();
+                _ioContext.run();
             } catch (const std::exception& e) {
                 std::cerr << "UDP Service Error: " << e.what() << std::endl;
             }
         });
     } catch (const std::exception& e) {
         std::cerr << "Failed to start UDP Service: " << e.what() << std::endl;
-        running = false;
+        _running = false;
     }
 }
 
 void UdpService::stop() {
-    if (!running) return;
-    running = false;
+    if (!_running) return;
+    _running = false;
 
-    if (socket) {
-        socket->close();
+    if (_socket) {
+        _socket->close();
     }
-    ioContext.stop();
+    _ioContext.stop();
 
-    if (serviceThread.joinable()) {
-        serviceThread.join();
+    if (_serviceThread.joinable()) {
+        _serviceThread.join();
     }
 }
 
 void UdpService::startReceive() {
-    if (!running || !socket) return;
+    if (!_running || !_socket) return;
 
-    socket->async_receive_from(
-        asio::buffer(recvBuffer), remoteEndpoint,
+    _socket->async_receive_from(
+        asio::buffer(_recvBuffer), _remoteEndpoint,
         [this](const std::error_code& error, std::size_t bytes_transferred) {
             handleReceive(error, bytes_transferred);
         }
@@ -58,18 +58,18 @@ void UdpService::startReceive() {
 
 void UdpService::handleReceive(const std::error_code& error, std::size_t bytes_transferred) {
     if (!error) {
-        if (bytes_transferred > 0 && onDataReceived) {
+        if (bytes_transferred > 0 && _onDataReceived) {
             // Create a copy of the data to pass to callback
-            std::vector<char> data(recvBuffer.begin(), recvBuffer.begin() + bytes_transferred);
-            std::string source = remoteEndpoint.address().to_string() + ":" + std::to_string(remoteEndpoint.port());
-            onDataReceived(data, source);
+            std::vector<char> data(_recvBuffer.begin(), _recvBuffer.begin() + bytes_transferred);
+            std::string source = _remoteEndpoint.address().to_string() + ":" + std::to_string(_remoteEndpoint.port());
+            _onDataReceived(data, source);
         }
         startReceive(); // Continue listening
     } else {
         if (error != asio::error::operation_aborted) {
             std::cerr << "UDP Receive Error: " << error.message() << std::endl;
             // Try to restart receive if it wasn't a stop command
-            if (running) startReceive(); 
+            if (_running) startReceive(); 
         }
     }
 }

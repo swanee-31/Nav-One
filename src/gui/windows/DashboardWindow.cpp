@@ -9,20 +9,20 @@ namespace Gui {
 DashboardWindow::DashboardWindow() {}
 
 void DashboardWindow::updateData(const Core::NavData& update) {
-    std::lock_guard<std::mutex> lock(dataMutex);
+    std::lock_guard<std::mutex> lock(_dataMutex);
     
     // Merge logic
-    if (update.heading != 0.0) lastData.heading = update.heading;
-    if (update.speedOverGround != 0.0) lastData.speedOverGround = update.speedOverGround;
-    if (update.courseOverGround != 0.0) lastData.courseOverGround = update.courseOverGround;
-    if (update.windSpeed != 0.0) lastData.windSpeed = update.windSpeed;
-    if (update.windAngle != 0.0) lastData.windAngle = update.windAngle;
+    if (update.heading != 0.0) _lastData.heading = update.heading;
+    if (update.speedOverGround != 0.0) _lastData.speedOverGround = update.speedOverGround;
+    if (update.courseOverGround != 0.0) _lastData.courseOverGround = update.courseOverGround;
+    if (update.windSpeed != 0.0) _lastData.windSpeed = update.windSpeed;
+    if (update.windAngle != 0.0) _lastData.windAngle = update.windAngle;
     
-    lastData.timestamp = update.timestamp;
-    lastData.sourceId = update.sourceId;
+    _lastData.timestamp = update.timestamp;
+    _lastData.sourceId = update.sourceId;
     
-    packetCount++;
-    lastSource = update.sourceId;
+    _packetCount++;
+    _lastSource = update.sourceId;
 }
 
 void DashboardWindow::render(Core::ThreadPool& threadPool, const App::ServiceManager& serviceManager) {
@@ -39,19 +39,19 @@ void DashboardWindow::render(Core::ThreadPool& threadPool, const App::ServiceMan
     ImGui::Separator();
 
     {
-        std::lock_guard<std::mutex> lock(dataMutex);
+        std::lock_guard<std::mutex> lock(_dataMutex);
         
         ImGui::TextColored(ImVec4(0,1,0,1), "Live Data");
-        ImGui::Text("Source: %s", lastSource.c_str());
-        ImGui::Text("Packets Received: %llu", packetCount);
+        ImGui::Text("Source: %s", _lastSource.c_str());
+        ImGui::Text("Packets Received: %llu", _packetCount);
         
         ImGui::Separator();
-        ImGui::Text("Heading: %.1f deg", lastData.heading);
-        ImGui::Text("Speed:   %.1f kts", lastData.speedOverGround);
-        ImGui::Text("Wind:    %.1f kts @ %.1f deg", lastData.windSpeed, lastData.windAngle);
+        ImGui::Text("Heading: %.1f deg", _lastData.heading);
+        ImGui::Text("Speed:   %.1f kts", _lastData.speedOverGround);
+        ImGui::Text("Wind:    %.1f kts @ %.1f deg", _lastData.windSpeed, _lastData.windAngle);
         
         // Time display
-        auto time = std::chrono::system_clock::to_time_t(lastData.timestamp);
+        auto time = std::chrono::system_clock::to_time_t(_lastData.timestamp);
         std::tm* tm = std::localtime(&time);
         char timeBuffer[32];
         std::strftime(timeBuffer, sizeof(timeBuffer), "%H:%M:%S", tm);

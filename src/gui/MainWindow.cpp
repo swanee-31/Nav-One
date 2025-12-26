@@ -16,19 +16,21 @@ static void glfw_error_callback(int error, const char* description)
 }
 
 MainWindow::MainWindow(int w, int h, const std::string& t) 
-    : width(w), height(h), title(t), window(nullptr) {
+    : _width(w), _height(h), _title(t), _window(nullptr) {
 }
 
 MainWindow::~MainWindow() {
-    // Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    if (_initialized) {
+        // Cleanup
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
 
-    if (window) {
-        glfwDestroyWindow(window);
+        if (_window) {
+            glfwDestroyWindow(_window);
+        }
+        glfwTerminate();
     }
-    glfwTerminate();
 }
 
 bool MainWindow::init() {
@@ -60,11 +62,11 @@ bool MainWindow::init() {
 #endif
 
     // Create window with graphics context
-    window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
-    if (window == nullptr)
+    _window = glfwCreateWindow(_width, _height, _title.c_str(), nullptr, nullptr);
+    if (_window == nullptr)
         return false;
     
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(_window);
     glfwSwapInterval(1); // Enable vsync
 
     // Setup Dear ImGui context
@@ -78,9 +80,10 @@ bool MainWindow::init() {
     setupStyle();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplGlfw_InitForOpenGL(_window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
+    _initialized = true;
     return true;
 }
 
@@ -94,7 +97,7 @@ void MainWindow::setupStyle() {
 }
 
 void MainWindow::run() {
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(_window)) {
         // Poll and handle events (inputs, window resize, etc.)
         glfwPollEvents();
 
@@ -130,7 +133,7 @@ void MainWindow::run() {
         // Rendering
         ImGui::Render();
         int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glfwGetFramebufferSize(_window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
         
         // Clear color
@@ -139,7 +142,7 @@ void MainWindow::run() {
         
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(_window);
     }
 }
 

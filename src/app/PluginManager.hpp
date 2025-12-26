@@ -27,11 +27,11 @@ public:
     
     void renderPlugins(const Core::NavData& data);
     
-    const std::vector<LoadedPlugin>& getPlugins() const { return plugins; }
-    std::vector<LoadedPlugin>& getPlugins() { return plugins; }
+    const std::vector<LoadedPlugin>& getPlugins() const { return _plugins; }
+    std::vector<LoadedPlugin>& getPlugins() { return _plugins; }
 
 private:
-    std::vector<LoadedPlugin> plugins;
+    std::vector<LoadedPlugin> _plugins;
 };
 
 } // namespace App

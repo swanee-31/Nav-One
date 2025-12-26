@@ -18,13 +18,13 @@ private:
     std::string calculateChecksum(const std::string& sentence) const;
 
     // Wind state
-    double windAngle = 0.0;
-    double windSpeed = 0.0;
-    bool windClockwise = true;
-    bool windSpeedIncreasing = true;
-    double windTimer = 0.0;
+    double _windAngle = 0.0;
+    double _windSpeed = 0.0;
+    bool _windClockwise = true;
+    bool _windSpeedIncreasing = true;
+    double _windTimer = 0.0;
 
-    mutable double timeSinceLastEmit = 0.0;
+    mutable double _timeSinceLastEmit = 0.0;
 };
 
 } // namespace Simulator

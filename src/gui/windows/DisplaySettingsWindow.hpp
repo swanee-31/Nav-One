@@ -8,14 +8,14 @@ class DisplaySettingsWindow {
 public:
     DisplaySettingsWindow() = default;
 
-    void show() { visible = true; }
-    bool isVisible() const { return visible; }
+    void show() { _visible = true; }
+    bool isVisible() const { return _visible; }
 
     void render() {
-        if (!visible) return;
+        if (!_visible) return;
 
         ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
-        if (ImGui::Begin("Display Settings", &visible)) {
+        if (ImGui::Begin("Display Settings", &_visible)) {
             
             auto& configManager = Utils::ConfigManager::instance();
             auto config = configManager.getDisplayConfig();
@@ -67,7 +67,7 @@ public:
     }
 
 private:
-    bool visible = false;
+    bool _visible = false;
 };
 
 } // namespace Gui

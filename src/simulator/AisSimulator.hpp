@@ -24,8 +24,8 @@ public:
     void setConfig(const SimulatorConfig& config) override;
 
 private:
-    std::vector<AisShipState> ships;
-    bool initialized = false;
+    std::vector<AisShipState> _ships;
+    bool _initialized = false;
 
     void initShips(const SimulatorConfig& config);
     void updateShipPhysics(AisShipState& ship, double dt);

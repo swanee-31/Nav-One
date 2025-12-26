@@ -13,16 +13,17 @@ public:
     ~MainWindow();
 
     virtual bool init();
-    void run();
+    virtual void run();
     
     // Method to be called every frame to render custom UI
     virtual void render();
 
 private:
-    int width;
-    int height;
-    std::string title;
-    GLFWwindow* window;
+    int _width;
+    int _height;
+    std::string _title;
+    GLFWwindow* _window;
+    bool _initialized = false;
     
     void setupStyle();
 };

@@ -60,3 +60,35 @@ FetchContent_MakeAvailable(tinyxml2)
 
 # --- Sources ---
 add_subdirectory(src)
+
+# --- Packaging (CPack) ---
+set(CPACK_PACKAGE_NAME "NavOne")
+set(CPACK_PACKAGE_VENDOR "Fabrice Meynckens")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "NavOne - Navigation Hub Application")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "NavOne")
+set(CPACK_PACKAGE_CONTACT "Fabrice Meynckens")
+
+# NSIS specific (Windows Installer)
+set(CPACK_NSIS_DISPLAY_NAME "NavOne Navigation Hub")
+set(CPACK_NSIS_PACKAGE_NAME "NavOne")
+set(CPACK_NSIS_MODIFY_PATH ON)
+# Icon for installer (optional, commented out for now)
+# set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.ico")
+# set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.ico")
+
+# Executable to run after install
+set(CPACK_NSIS_EXECUTABLES_DIRECTORY "bin")
+set(CPACK_NSIS_MENU_LINKS "bin/NavOne.exe" "NavOne")
+
+# Generators
+if(WIN32)
+    set(CPACK_GENERATOR "NSIS;ZIP")
+else()
+    set(CPACK_GENERATOR "TGZ")
+endif()
+
+include(CPack)

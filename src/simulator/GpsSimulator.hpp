@@ -16,7 +16,7 @@ private:
     std::string generateRMC(const Core::NavData& data) const;
     std::string calculateChecksum(const std::string& sentence) const;
 
-    mutable double timeSinceLastEmit = 0.0;
+    mutable double _timeSinceLastEmit = 0.0;
 };
 
 } // namespace Simulator

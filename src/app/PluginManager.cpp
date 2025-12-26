@@ -9,7 +9,7 @@ PluginManager::PluginManager() {}
 
 PluginManager::~PluginManager() {
     // Unload all plugins in reverse order
-    for (auto it = plugins.rbegin(); it != plugins.rend(); ++it) {
+    for (auto it = _plugins.rbegin(); it != _plugins.rend(); ++it) {
         if (it->instance && it->destroyFunc) {
             it->instance->shutdown();
             it->destroyFunc(it->instance);
@@ -18,12 +18,12 @@ PluginManager::~PluginManager() {
             FreeLibrary(it->handle);
         }
     }
-    plugins.clear();
+    _plugins.clear();
 }
 
 void PluginManager::loadPlugin(const std::string& path) {
     // Check if already loaded
-    for (const auto& p : plugins) {
+    for (const auto& p : _plugins) {
         if (p.path == path) return;
     }
 
@@ -61,15 +61,15 @@ void PluginManager::loadPlugin(const std::string& path) {
     plugin.destroyFunc = destroyFunc;
     plugin.active = true;
 
-    plugins.push_back(plugin);
+    _plugins.push_back(plugin);
     std::cout << "Loaded plugin: " << instance->getName() << " (" << instance->getVersion() << ")" << std::endl;
 }
 
 void PluginManager::unloadPlugin(const std::string& path) {
-    auto it = std::find_if(plugins.begin(), plugins.end(), 
+    auto it = std::find_if(_plugins.begin(), _plugins.end(), 
         [&path](const LoadedPlugin& p) { return p.path == path; });
 
-    if (it != plugins.end()) {
+    if (it != _plugins.end()) {
         if (it->instance) {
             it->instance->shutdown();
             it->destroyFunc(it->instance);
@@ -77,12 +77,12 @@ void PluginManager::unloadPlugin(const std::string& path) {
         if (it->handle) {
             FreeLibrary(it->handle);
         }
-        plugins.erase(it);
+        _plugins.erase(it);
     }
 }
 
 void PluginManager::renderPlugins(const Core::NavData& data) {
-    for (auto& plugin : plugins) {
+    for (auto& plugin : _plugins) {
         if (plugin.active && plugin.instance) {
             plugin.instance->render(data);
         }

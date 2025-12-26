@@ -26,14 +26,14 @@ public:
             bool hasGps = (data.speedOverGround >= 0); // Simple check
             
             // Toggle Mode
-            if (ImGui::Button(showTrueWind ? "Mode: TWA (True)" : "Mode: AWA (Apparent)")) {
-                if (!showTrueWind && hasGps) {
-                    showTrueWind = true;
+            if (ImGui::Button(_showTrueWind ? "Mode: TWA (True)" : "Mode: AWA (Apparent)")) {
+                if (!_showTrueWind && hasGps) {
+                    _showTrueWind = true;
                 } else {
-                    showTrueWind = false;
+                    _showTrueWind = false;
                 }
             }
-            if (showTrueWind && !hasGps) {
+            if (_showTrueWind && !hasGps) {
                 ImGui::SameLine();
                 ImGui::TextColored(ImVec4(1,0,0,1), "(Need GPS SOG)");
             }
@@ -42,7 +42,7 @@ public:
             double displayAngle = data.windAngle;
             double displaySpeed = data.windSpeed;
             
-            if (showTrueWind) {
+            if (_showTrueWind) {
                 // Calculate True Wind from Apparent
                 // AWS, AWA, SOG
                 double aws = data.windSpeed;
@@ -145,19 +145,19 @@ public:
             
             ImGui::SetWindowFontScale(fontScale);
             
-            ImGui::Text("%s: %.1f deg", showTrueWind ? "TWA" : "AWA", displayAngle);
-            ImGui::Text("%s: %.1f kn", showTrueWind ? "TWS" : "AWS", displaySpeed);
+            ImGui::Text("%s: %.1f deg", _showTrueWind ? "TWA" : "AWA", displayAngle);
+            ImGui::Text("%s: %.1f kn", _showTrueWind ? "TWS" : "AWS", displaySpeed);
             
             ImGui::SetWindowFontScale(1.0f); // Reset
 
-            ImGui::End();
         }
+        ImGui::End();
     }
 
     void shutdown() override {}
 
 private:
-    bool showTrueWind = false;
+    bool _showTrueWind = false;
 };
 
 // Export

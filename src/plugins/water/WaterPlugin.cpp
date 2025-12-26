@@ -24,11 +24,11 @@ public:
             // 1. Controls (Time Scale)
             ImGui::Text("Time Scale:");
             ImGui::SameLine();
-            if (ImGui::RadioButton("1m", timeScaleMinutes == 1)) timeScaleMinutes = 1;
+            if (ImGui::RadioButton("1m", _timeScaleMinutes == 1)) _timeScaleMinutes = 1;
             ImGui::SameLine();
-            if (ImGui::RadioButton("5m", timeScaleMinutes == 5)) timeScaleMinutes = 5;
+            if (ImGui::RadioButton("5m", _timeScaleMinutes == 5)) _timeScaleMinutes = 5;
             ImGui::SameLine();
-            if (ImGui::RadioButton("15m", timeScaleMinutes == 15)) timeScaleMinutes = 15;
+            if (ImGui::RadioButton("15m", _timeScaleMinutes == 15)) _timeScaleMinutes = 15;
 
             // 2. Depth Graph
             renderDepthGraph();
@@ -71,58 +71,59 @@ public:
                 ImGui::Text("Speed Through Water: ---");
             }
 
-            ImGui::End();
         }
+        ImGui::End();
     }
 
+
     void shutdown() override {
-        depthHistory.clear();
+        _depthHistory.clear();
     }
 
 private:
-    std::deque<float> depthHistory;
-    int timeScaleMinutes = 1;
-    double lastUpdateTime = 0.0;
+    std::deque<float> _depthHistory;
+    int _timeScaleMinutes = 1;
+    double _lastUpdateTime = 0.0;
     
     // Assuming update rate is roughly 1Hz or we sample at 1Hz for the graph
     // 15 minutes * 60 seconds = 900 points max
-    const size_t MAX_HISTORY_SIZE = 900; 
+    const size_t _MAX_HISTORY_SIZE = 900; 
 
     void updateHistory(const Core::NavData& data) {
         double currentTime = ImGui::GetTime();
-        if (currentTime - lastUpdateTime >= 1.0) { // Sample every second
-            lastUpdateTime = currentTime;
+        if (currentTime - _lastUpdateTime >= 1.0) { // Sample every second
+            _lastUpdateTime = currentTime;
             
             if (data.hasDepth) {
-                depthHistory.push_back((float)data.depth);
+                _depthHistory.push_back((float)data.depth);
             } else {
                 // Push last known or 0? Let's push last known if available, or 0.
-                if (!depthHistory.empty()) depthHistory.push_back(depthHistory.back());
-                else depthHistory.push_back(0.0f);
+                if (!_depthHistory.empty()) _depthHistory.push_back(_depthHistory.back());
+                else _depthHistory.push_back(0.0f);
             }
             
-            if (depthHistory.size() > MAX_HISTORY_SIZE) {
-                depthHistory.pop_front();
+            if (_depthHistory.size() > _MAX_HISTORY_SIZE) {
+                _depthHistory.pop_front();
             }
         }
     }
 
     void renderDepthGraph() {
-        if (depthHistory.empty()) return;
+        if (_depthHistory.empty()) return;
 
-        int pointsToShow = timeScaleMinutes * 60;
-        if (pointsToShow > depthHistory.size()) pointsToShow = (int)depthHistory.size();
+        int pointsToShow = _timeScaleMinutes * 60;
+        if (pointsToShow > _depthHistory.size()) pointsToShow = (int)_depthHistory.size();
         
         // Create a vector for PlotLines
         std::vector<float> plotData;
         plotData.reserve(pointsToShow);
         
         // Get the last 'pointsToShow' elements
-        auto it = depthHistory.end() - pointsToShow;
+        auto it = _depthHistory.end() - pointsToShow;
         float minVal = 10000.0f;
         float maxVal = -10000.0f;
         
-        for (; it != depthHistory.end(); ++it) {
+        for (; it != _depthHistory.end(); ++it) {
             float val = *it;
             plotData.push_back(val);
             if (val < minVal) minVal = val;

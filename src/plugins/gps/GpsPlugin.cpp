@@ -40,8 +40,8 @@ public:
             std::tm tm = *std::gmtime(&time);
             ImGui::Text("UTC: %02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
 
-            ImGui::End();
         }
+        ImGui::End();
     }
 
     void shutdown() override {

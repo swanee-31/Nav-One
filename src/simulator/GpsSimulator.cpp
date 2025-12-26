@@ -10,7 +10,7 @@ GpsSimulator::GpsSimulator(std::unique_ptr<ISimulator> simulator)
 
 void GpsSimulator::update(double dt) {
     SimulatorDecorator::update(dt);
-    timeSinceLastEmit += dt * 1000.0; // Convert to ms
+    _timeSinceLastEmit += dt * 1000.0; // Convert to ms
 }
 
 Core::NavData GpsSimulator::getCurrentData() const {
@@ -30,10 +30,10 @@ std::vector<std::string> GpsSimulator::getNmeaSentences() const {
     auto sentences = SimulatorDecorator::getNmeaSentences();
     auto config = getConfig();
     
-    if (config.enableGps && timeSinceLastEmit >= config.gpsFrequency) {
+    if (config.enableGps && _timeSinceLastEmit >= config.gpsFrequency) {
         auto data = getCurrentData(); // Get data with flags
         sentences.push_back(generateRMC(data));
-        timeSinceLastEmit = 0.0;
+        _timeSinceLastEmit = 0.0;
     }
     
     return sentences;

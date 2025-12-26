@@ -27,13 +27,13 @@ public:
     size_t getThreadCount() const;
 
 private:
-    std::vector<std::thread> workers;
-    std::queue<std::function<void()>> tasks;
+    std::vector<std::thread> _workers;
+    std::queue<std::function<void()>> _tasks;
     
-    std::mutex queueMutex;
-    std::condition_variable condition;
-    std::atomic<bool> stop;
-    std::atomic<size_t> busyThreads;
+    std::mutex _queueMutex;
+    std::condition_variable _condition;
+    std::atomic<bool> _stop;
+    std::atomic<size_t> _busyThreads;
 };
 
 // Template implementation
@@ -47,15 +47,15 @@ auto ThreadPool::enqueue(F&& f, Args&&... args) -> std::future<typename std::inv
 
     std::future<return_type> res = task->get_future();
     {
-        std::unique_lock<std::mutex> lock(queueMutex);
+        std::unique_lock<std::mutex> lock(_queueMutex);
 
         // Don't allow enqueueing after stopping
-        if(stop)
+        if(_stop)
             throw std::runtime_error("enqueue on stopped ThreadPool");
 
-        tasks.emplace([task](){ (*task)(); });
+        _tasks.emplace([task](){ (*task)(); });
     }
-    condition.notify_one();
+    _condition.notify_one();
     return res;
 }
 

@@ -20,22 +20,22 @@ public:
     void setPosition(double lat, double lon) override;
 
 private:
-    mutable std::mutex mutex;
-    SimulatorConfig config;
+    mutable std::mutex _mutex;
+    SimulatorConfig _config;
     
     // Physics state
-    double currentLat;
-    double currentLon;
-    double currentSog;
-    double currentCog;
+    double _currentLat;
+    double _currentLon;
+    double _currentSog;
+    double _currentCog;
     
     // Variation logic
-    double targetSog;
-    double targetCog;
-    double variationTimer = 0.0;
+    double _targetSog;
+    double _targetCog;
+    double _variationTimer = 0.0;
 
     // Random
-    std::mt19937 rng;
+    std::mt19937 _rng;
 };
 
 } // namespace Simulator

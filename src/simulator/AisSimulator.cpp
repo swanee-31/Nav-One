@@ -138,7 +138,7 @@ void AisSimulator::setConfig(const SimulatorConfig& config) {
 }
 
 void AisSimulator::initShips(const SimulatorConfig& config) {
-    ships.clear();
+    _ships.clear();
     for (const auto& target : config.aisTargets) {
         AisShipState state;
         state.config = target;
@@ -146,7 +146,7 @@ void AisSimulator::initShips(const SimulatorConfig& config) {
         state.currentLon = target.longitude;
         state.timeSinceLastEmit = 0.0;
         state.timeSinceLastStaticEmit = 0.0;
-        ships.push_back(state);
+        _ships.push_back(state);
     }
 }
 
@@ -156,7 +156,7 @@ void AisSimulator::update(double dt) {
     auto config = getConfig();
     if (!config.enableAis) return;
 
-    for (auto& ship : ships) {
+    for (auto& ship : _ships) {
         if (!ship.config.enabled) continue;
         
         updateShipPhysics(ship, dt);
@@ -198,7 +198,7 @@ std::vector<std::string> AisSimulator::getNmeaSentences() const {
     // and here we just read? No, we need to reset timer on emit.
     // I will assume ships is mutable or I will use const_cast.
     
-    auto& mutableShips = const_cast<std::vector<AisShipState>&>(ships);
+    auto& mutableShips = const_cast<std::vector<AisShipState>&>(_ships);
 
     for (auto& ship : mutableShips) {
         if (!ship.config.enabled) continue;

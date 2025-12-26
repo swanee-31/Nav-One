@@ -14,20 +14,20 @@ public:
     void render();
     void addLog(const std::string& source, const std::string& frame);
     
-    void show() { visible = true; }
-    void hide() { visible = false; }
-    void toggle() { visible = !visible; }
-    bool isVisible() const { return visible; }
-    bool* getVisiblePtr() { return &visible; }
+    void show() { _visible = true; }
+    void hide() { _visible = false; }
+    void toggle() { _visible = !_visible; }
+    bool isVisible() const { return _visible; }
+    bool* getVisiblePtr() { return &_visible; }
 
 private:
-    bool visible = false;
-    bool autoScroll = true;
-    bool paused = false;
-    std::deque<std::string> logs;
-    std::string textBuffer; // For InputTextMultiline
-    const size_t MAX_LOGS = 100;
-    std::mutex logMutex;
+    bool _visible = false;
+    bool _autoScroll = true;
+    bool _paused = false;
+    std::deque<std::string> _logs;
+    std::string _textBuffer; // For InputTextMultiline
+    const size_t _maxLogs = 100;
+    std::mutex _logMutex;
 };
 
 } // namespace Gui

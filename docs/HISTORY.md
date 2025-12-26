@@ -2,6 +2,23 @@
 
 Ce fichier sert de mémoire pour le développement du projet. Il permet de reprendre le contexte rapidement lors d'une nouvelle session.
 
+## Session: 26 Décembre 2025
+
+### Objectifs
+- Mettre en place le système de build et de packaging pour la distribution.
+- Générer un installeur Windows pour l'utilisateur final.
+
+### Réalisations Techniques
+- **Configuration CPack** : Ajout des directives CPack dans `CMakeLists.txt` pour supporter NSIS (Windows Installer) et ZIP.
+- **Build Release** : Compilation réussie du projet en mode Release.
+- **Packaging** : Génération des artefacts de distribution :
+  - `NavOne-0.1.0-win64.exe` (Installeur)
+  - `NavOne-0.1.0-win64.zip` (Portable)
+
+### État Actuel
+- Version 0.1.0 tagguée.
+- Le pipeline de build produit des exécutables fonctionnels et installables.
+
 ## Session: 20 Décembre 2025
 
 ### Objectifs
@@ -110,28 +127,51 @@ cmake --build .
 ---
 *Pour reprendre le développement, demandez à l'IA de "Lire le fichier docs/HISTORY.md pour récupérer le contexte".*
 
-## Session: 21 D�cembre 2025
+## Session: 21 Décembre 2025
 
 ### Objectifs
-- Refactoring du module Simulator pour le rendre modulaire et extensible.
-- Utilisation du pattern Decorator pour s�parer les logiques de simulation (GPS, Vent).
-- D�placement des sources du simulateur dans un dossier d�di� src/simulator/.
+- Refactoring complet du module Simulator (Pattern Decorator).
+- Ajout de simulations environnementales (Eau, AIS).
+- Création d'un système de plugins pour la visualisation.
+- Packaging de l'application.
 
-### R�alisations Techniques
+### Réalisations Techniques
 
 #### 1. Refactoring du Simulateur (Pattern Decorator)
-- Interface ISimulator : D�finit le contrat pour tous les composants de simulation.
-- BaseSimulator : G�re la physique de base (position, vitesse, cap) et la variation al�atoire.
-- SimulatorDecorator : Classe de base pour les d�corateurs.
-- GpsSimulator : D�corateur ajoutant la g�n�ration de trames NMEA GPS (GPRMC).
-- WindSimulator : D�corateur ajoutant la simulation du vent (IIMWV).
+- **Architecture** : Découpage en `ISimulator`, `BaseSimulator` et `SimulatorDecorator`.
+- **Modules** :
+  - `GpsSimulator` : Génère GPRMC.
+  - `WindSimulator` : Génère IIMWV.
+  - `WaterSimulator` : Génère IIDBS, IIDPT, IIMTW, IIHDT, IIVHW (avec oscillation sinusoïdale).
+  - `AisSimulator` : Génère des trames binaires AIVDM pour 3 cibles (Zigomar, Yamato, Titanic).
+- **Contrôle** : Ajout de contrôles de fréquence (ms) pour chaque module dans `SimulatorWindow`.
 
-#### 2. R�organisation des Fichiers
-- Cr�ation du dossier src/simulator/.
-- Suppression de src/core/Simulator.hpp et src/core/Simulator.cpp.
-- Mise � jour de CMakeLists.txt.
+#### 2. Système de Plugins
+- **Architecture** : Chargement dynamique de DLLs via `PluginManager`.
+- **Nouveaux Plugins** :
+  - `WaterPlugin` : Visualisation graphique de l'historique de profondeur (`ImGui::PlotLines`) et données numériques.
+  - `WindPlugin` : Jauge de vent (AWA/TWA).
+  - `GpsPlugin` : Affichage des coordonnées.
 
-#### 3. Int�gration
-- NavOneApp : Initialise d�sormais une cha�ne de d�corateurs : WindSimulator(GpsSimulator(BaseSimulator)).
-- SimulatorWindow : Adapt�e pour utiliser l'interface ISimulator.
+#### 3. Améliorations Core
+- **NmeaParser** : Ajout du support pour DPT, MTW, VHW, HDT.
+- **NavOneApp** : Propagation des données environnementales (Température eau, Vitesse surface).
+- **About Window** : Affichage de la version Git (via CMake).
+
+#### 4. Packaging et Déploiement
+- **CMake/CPack** : Configuration pour générer un installateur NSIS (.exe) et une archive ZIP.
+- **Installation** : Règles `install()` pour copier l'exécutable et les plugins dans `bin/`.
+
+#### 5. Corrections de Bugs
+- **Crash ImGui** : Correction de l'appel à `ImGui::End()` manquant lors de la réduction des fenêtres (`SimulatorWindow`, Plugins, `CommunicationSettings`).
+- **Compilation** : Correction des exports DLL (`createPlugin` vs `CreatePlugin`).
+- **Logique** : Correction de la structure `AisTargetConfig` (champ `callsign` manquant).
+
+### État Actuel
+- L'application est packagée et distribuable.
+- Le simulateur est complet (GPS, Vent, Eau, AIS).
+- Les plugins permettent une visualisation modulaire.
+- La stabilité a été renforcée (fix crashs UI).
+
+---
 

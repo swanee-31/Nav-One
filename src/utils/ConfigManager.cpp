@@ -7,8 +7,8 @@ using namespace tinyxml2;
 namespace Utils {
 
 void ConfigManager::load(const std::string& filename) {
-    sources.clear();
-    outputs.clear();
+    _sources.clear();
+    _outputs.clear();
     XMLDocument doc;
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
         std::cerr << "Failed to load config file: " << filename << std::endl;
@@ -47,7 +47,7 @@ void ConfigManager::load(const std::string& filename) {
                 }
             }
 
-            sources.push_back(config);
+            _sources.push_back(config);
             sourceElem = sourceElem->NextSiblingElement("Source");
         }
     }
@@ -97,15 +97,33 @@ void ConfigManager::load(const std::string& filename) {
                 }
             }
 
-            outputs.push_back(config);
+            _outputs.push_back(config);
             outputElem = outputElem->NextSiblingElement("Output");
         }
     }
 
     XMLElement* displayElem = root->FirstChildElement("DisplaySettings");
     if (displayElem) {
-        displayConfig.fontScale = displayElem->FloatAttribute("fontScale", 1.0f);
-        displayConfig.theme = displayElem->IntAttribute("theme", 0);
+        _displayConfig.fontScale = displayElem->FloatAttribute("fontScale", 1.0f);
+        _displayConfig.theme = displayElem->IntAttribute("theme", 0);
+    }
+
+    XMLElement* simElem = root->FirstChildElement("Simulator");
+    if (simElem) {
+        _simulatorConfig.enableGps = simElem->BoolAttribute("enableGps", true);
+        _simulatorConfig.enableWind = simElem->BoolAttribute("enableWind", true);
+        _simulatorConfig.enableWater = simElem->BoolAttribute("enableWater", true);
+        _simulatorConfig.enableAis = simElem->BoolAttribute("enableAis", true);
+        
+        _simulatorConfig.startLatitude = simElem->DoubleAttribute("startLatitude", 43.2965);
+        _simulatorConfig.startLongitude = simElem->DoubleAttribute("startLongitude", 5.3698);
+        _simulatorConfig.baseSpeed = simElem->DoubleAttribute("baseSpeed", 10.0);
+        _simulatorConfig.baseCourse = simElem->DoubleAttribute("baseCourse", 90.0);
+
+        _simulatorConfig.minDepth = simElem->DoubleAttribute("minDepth", 5.0);
+        _simulatorConfig.maxDepth = simElem->DoubleAttribute("maxDepth", 50.0);
+        _simulatorConfig.minWaterTemp = simElem->DoubleAttribute("minWaterTemp", 15.0);
+        _simulatorConfig.maxWaterTemp = simElem->DoubleAttribute("maxWaterTemp", 25.0);
     }
 }
 
@@ -115,14 +133,29 @@ void ConfigManager::save(const std::string& filename) {
     doc.InsertEndChild(root);
 
     XMLElement* displayElem = doc.NewElement("DisplaySettings");
-    displayElem->SetAttribute("fontScale", displayConfig.fontScale);
-    displayElem->SetAttribute("theme", displayConfig.theme);
+    displayElem->SetAttribute("fontScale", _displayConfig.fontScale);
+    displayElem->SetAttribute("theme", _displayConfig.theme);
     root->InsertEndChild(displayElem);
+
+    XMLElement* simElem = doc.NewElement("Simulator");
+    simElem->SetAttribute("enableGps", _simulatorConfig.enableGps);
+    simElem->SetAttribute("enableWind", _simulatorConfig.enableWind);
+    simElem->SetAttribute("enableWater", _simulatorConfig.enableWater);
+    simElem->SetAttribute("enableAis", _simulatorConfig.enableAis);
+    simElem->SetAttribute("startLatitude", _simulatorConfig.startLatitude);
+    simElem->SetAttribute("startLongitude", _simulatorConfig.startLongitude);
+    simElem->SetAttribute("baseSpeed", _simulatorConfig.baseSpeed);
+    simElem->SetAttribute("baseCourse", _simulatorConfig.baseCourse);
+    simElem->SetAttribute("minDepth", _simulatorConfig.minDepth);
+    simElem->SetAttribute("maxDepth", _simulatorConfig.maxDepth);
+    simElem->SetAttribute("minWaterTemp", _simulatorConfig.minWaterTemp);
+    simElem->SetAttribute("maxWaterTemp", _simulatorConfig.maxWaterTemp);
+    root->InsertEndChild(simElem);
 
     XMLElement* sourcesElem = doc.NewElement("DataSources");
     root->InsertEndChild(sourcesElem);
 
-    for (const auto& source : sources) {
+    for (const auto& source : _sources) {
         XMLElement* sourceElem = doc.NewElement("Source");
         sourceElem->SetAttribute("id", source.id.c_str());
         sourceElem->SetAttribute("name", source.name.c_str());
@@ -143,7 +176,7 @@ void ConfigManager::save(const std::string& filename) {
     XMLElement* outputsElem = doc.NewElement("DataOutputs");
     root->InsertEndChild(outputsElem);
 
-    for (const auto& output : outputs) {
+    for (const auto& output : _outputs) {
         XMLElement* outputElem = doc.NewElement("Output");
         outputElem->SetAttribute("id", output.id.c_str());
         outputElem->SetAttribute("name", output.name.c_str());

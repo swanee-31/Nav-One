@@ -22,12 +22,12 @@ private:
     std::string calculateChecksum(const std::string& sentence) const;
 
     // Water state
-    double currentDepth = 0.0;
-    double currentWaterTemp = 0.0;
-    double timer = 0.0;
-    bool increasing = true;
+    double _currentDepth = 0.0;
+    double _currentWaterTemp = 0.0;
+    double _timer = 0.0;
+    bool _increasing = true;
 
-    mutable double timeSinceLastEmit = 0.0;
+    mutable double _timeSinceLastEmit = 0.0;
 };
 
 } // namespace Simulator
