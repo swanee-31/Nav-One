@@ -163,6 +163,12 @@ void NavOneApp::stop() {
 }
 
 void NavOneApp::render() {
+#ifdef _WIN32
+    const std::string ext = ".dll";
+#else
+    const std::string ext = ".so";
+#endif
+
     // Menu Bar
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("Configuration")) {
@@ -183,16 +189,16 @@ void NavOneApp::render() {
                 // Todo : scan the directory. 
                 // Here we hardcode the path relative to the executable.
                 // CMake puts it in src/plugins/
-                _pluginManager.loadPlugin("GpsPlugin.dll");
+                _pluginManager.loadPlugin("GpsPlugin" + ext);
             }
             if (ImGui::MenuItem("Load GPS Big Plugin")) {
-                _pluginManager.loadPlugin("GpsBigPlugin.dll");
+                _pluginManager.loadPlugin("GpsBigPlugin" + ext);
             }
             if (ImGui::MenuItem("Load Wind Plugin")) {
-                _pluginManager.loadPlugin("WindPlugin.dll");
+                _pluginManager.loadPlugin("WindPlugin" + ext);
             }
             if (ImGui::MenuItem("Load Water Plugin")) {
-                _pluginManager.loadPlugin("WaterPlugin.dll");
+                _pluginManager.loadPlugin("WaterPlugin" + ext);
             }
             
             ImGui::Separator();
