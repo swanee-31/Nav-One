@@ -167,7 +167,8 @@ void NavOneApp::render() {
     const std::string prefix = "";
     const std::string ext = ".dll";
 #else
-    const std::string prefix = "lib";
+    // On Linux, dlopen requires a path (e.g. "./") to look in the current directory
+    const std::string prefix = "./lib";
     const std::string ext = ".so";
 #endif
 
