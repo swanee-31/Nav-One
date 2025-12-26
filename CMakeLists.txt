@@ -61,6 +61,9 @@ FetchContent_MakeAvailable(tinyxml2)
 # --- Sources ---
 add_subdirectory(src)
 
+# --- Installation ---
+install(FILES README.md DESTINATION .)
+
 # --- Packaging (CPack) ---
 set(CPACK_PACKAGE_NAME "NavOne")
 set(CPACK_PACKAGE_VENDOR "Fabrice Meynckens")
